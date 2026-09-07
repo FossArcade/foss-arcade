@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "Foss Arcade monorepo — public FOSS game forge. First title: Foss Snake.",
+  "description": "Foss Arcade monorepo \u2014 public FOSS game forge. First title: Foss Snake.",
   "homepage": "https://github.com/FossArcade/foss-arcade",
   "bugs": {
     "url": "https://github.com/FossArcade/foss-arcade/issues"
@@ -17,7 +17,8 @@
     "start": "npx --yes serve games/snake -l 4321",
     "test": "node --test games/snake/tests/*.test.js",
     "shopfront": "npx --yes serve -l 4322 .",
-    "reddit:intake": "node tools/reddit-intake/intake.mjs"
+    "reddit:intake": "node tools/reddit-intake/intake.mjs",
+    "intake:target": "node tools/intake-write-target/write.mjs"
   },
   "engines": {
     "node": ">=18"

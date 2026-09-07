@@ -29,6 +29,8 @@ These docs are **living**. They describe the intended model, governance, and jud
 | [governance/GAPS.md](./governance/GAPS.md) | Remaining planning gaps (TODO checklist) |
 | [ALIGN.md](./ALIGN.md) | Alignment notes (2026-09-06): naming / URLs / dual-trust / reddit status |
 | [governance/reddit-formats.md](./governance/reddit-formats.md) | **DRAFT / LATER** — Reddit tags & proposal formats ([r/FOSSArcade](https://www.reddit.com/r/FOSSArcade) live; process not yet promoted) |
+| [harness/target.schema.md](./harness/target.schema.md) | Minimal harness target YAML schema (`games/<game>/targets/`) |
+| [walkthroughs/implement-snake-target.md](./walkthroughs/implement-snake-target.md) | Human walkthrough: implement a Snake target end-to-end |
 | [reddit/](./reddit/) | Ops kit: [SETUP.md](./reddit/SETUP.md) checklist, flairs, Automoderator, templates, welcome/about copy (paste-ready; sub [r/FOSSArcade](https://www.reddit.com/r/FOSSArcade) live) |
 
 ## How to use these docs

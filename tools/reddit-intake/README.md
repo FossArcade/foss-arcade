@@ -54,3 +54,25 @@ Note: Reddit `.rss` URLs often return **Atom** (`<entry>`). The parser accepts b
 - Reddit `.rss` returns **Atom**; parser handles `<entry>` and RSS `<item>`.
 - From shared cloud IPs, Reddit may return **HTTP 429** after a few fetches — wait and retry, or run from a residential network with a clear User-Agent.
 - An empty sub produces a valid Atom feed with **zero** entries (intake creates nothing; that is success).
+
+
+## Parallel path: harness targets/
+
+Seed harness intake for races is **`games/<game>/targets/*.yaml`** (see [`docs/harness/target.schema.md`](../../docs/harness/target.schema.md)).
+
+| Path | Role |
+| --- | --- |
+| **targets/** | Canonical Seed path for the harness (proposals to target YAML to races) |
+| **GitHub issues** | Optional parallel triage surface (this RSS tool) |
+
+Later, Reddit RSS / RBP intake can call [`tools/intake-write-target/write.mjs`](../intake-write-target/write.mjs) to materialize target YAML from approved posts. For now: **issues OR targets** — either is fine; prefer writing a target when the intent is a harness race job.
+
+Write a target from a fixture or proposal file (repo root):
+
+    npm run intake:target -- tools/intake-write-target/fixtures/snake-local-hiscore.md
+
+Or directly:
+
+    node tools/intake-write-target/write.mjs tools/intake-write-target/fixtures/snake-local-hiscore.md
+
+Idempotent: existing `games/<game>/targets/<id>.yaml` is skipped.
