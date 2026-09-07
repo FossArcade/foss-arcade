@@ -16,6 +16,7 @@
   "scripts": {
     "start": "npx --yes serve games/snake -l 4321",
     "test": "node --test games/snake/tests/*.test.js",
+    "foss": "node tools/harness/foss.mjs",
     "shopfront": "npx --yes serve -l 4322 .",
     "reddit:intake": "node tools/reddit-intake/intake.mjs",
     "intake:target": "node tools/intake-write-target/write.mjs"

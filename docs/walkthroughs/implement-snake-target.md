@@ -2,6 +2,8 @@
 
 Short steps for a human contributor on their own computer. Neutral — no personal names.
 
+Or just run `npm run foss` to pick a target interactively and print next steps.
+
 Example target: `games/snake/targets/snake-local-hiscore.yaml` (local high-score table).
 
 ## 1. Sync main

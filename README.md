@@ -18,6 +18,17 @@ Then open http://localhost:4321
 
 More games will show up here as the commons grows.
 
+## Contribute (pick a target)
+
+Contributor entrypoint:
+
+```
+npm run foss
+```
+
+Interactive list of open harness targets, summary, and next steps. See tools/harness/README.md.
+
+
 ## What’s this repo for?
 
 | | |
