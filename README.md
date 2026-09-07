@@ -26,7 +26,7 @@ Contributor entrypoint:
 npm run foss
 ```
 
-Interactive list of open harness targets, summary, and next steps. See tools/harness/README.md.
+Interactive list of open harness targets, summary, and next steps. Press w to start the configured agent (FOSS_AGENT_CMD). See tools/harness/README.md.
 
 
 ## What’s this repo for?

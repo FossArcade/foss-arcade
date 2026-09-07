@@ -11,6 +11,7 @@ import { readdirSync, readFileSync, statSync } from "node:fs";
 import { join, relative, resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import * as readline from "node:readline";
+import { spawn, spawnSync } from "node:child_process";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = resolve(__dirname, "../..");
@@ -234,33 +235,223 @@ function printNextSteps(t) {
   const prBody = "## Summary\nImplements target `" + t.id + "`.\n\n## AI disclosure\n- AI assistance: <used / not used>\n- Scope: <code / docs / …>\n";
   console.log("       gh pr create --repo FossArcade/foss-arcade --title " + JSON.stringify(prTitle) + " --body " + JSON.stringify(prBody));
   console.log("  Walkthrough (example): " + walkthrough);
+  console.log("  Tip: press [w] to start the configured agent (FOSS_AGENT_CMD) on this target.");
   console.log("");
 }
 
-function question(rl, prompt) {
-  return new Promise((resolve) => {
-    let settled = false;
-    const finish = (value) => {
-      if (settled) return;
-      settled = true;
-      resolve(value == null ? "" : value);
+
+function buildAgentPrompt(t) {
+  const branch = "target/" + t.id;
+  const criteria =
+    t.acceptance_criteria.length > 0
+      ? t.acceptance_criteria.map((c) => "- " + c).join("\n")
+      : "- (none listed — follow the target YAML)";
+  return [
+    "Implement Foss Arcade harness target `" + t.id + "`.",
+    "",
+    "Target:",
+    "- id: " + t.id,
+    "- title: " + t.title,
+    "- game: " + t.game,
+    "- YAML path: " + t.path,
+    "",
+    "Acceptance criteria:",
+    criteria,
+    "",
+    "Workflow:",
+    "1. Create and work on branch `" + branch + "`.",
+    "2. Prefer scoped diffs under games/" + t.game + "/ (do not expand scope unnecessarily).",
+    "3. Run `npm test` from the repo root and fix failures.",
+    "4. Commit with DCO sign-off: `git commit -s`.",
+    "5. Push the branch and open a PR against main describing the change.",
+    "",
+    "Stay within the target acceptance criteria. Do not implement unrelated features.",
+  ].join("\n");
+}
+
+
+function isDryRun() {
+  if (process.env.FOSS_AGENT_DRY_RUN === "1") return true;
+  return process.argv.includes("--dry-run");
+}
+
+function expandAgentCmd(template, vars) {
+  return template
+    .replaceAll("{{PROMPT}}", vars.PROMPT)
+    .replaceAll("{{TARGET_ID}}", vars.TARGET_ID)
+    .replaceAll("{{TARGET_PATH}}", vars.TARGET_PATH)
+    .replaceAll("{{REPO_ROOT}}", vars.REPO_ROOT)
+    .replaceAll("{{BRANCH}}", vars.BRANCH);
+}
+
+function whichBin(name) {
+  const r = spawnSync("which", [name], { encoding: "utf8" });
+  if (r.status === 0 && r.stdout && r.stdout.trim()) {
+    return r.stdout.trim();
+  }
+  return null;
+}
+
+function resolveAgentLaunch(prompt, vars) {
+  const custom = process.env.FOSS_AGENT_CMD;
+  if (custom && custom.trim()) {
+    const cmd = expandAgentCmd(custom, vars);
+    return { mode: "shell", cmd, label: cmd };
+  }
+
+  const agentPath = whichBin("agent");
+  if (agentPath) {
+    return {
+      mode: "args",
+      file: agentPath,
+      args: ["-p", prompt],
+      label: agentPath + " -p <prompt>",
     };
-    rl.question(prompt, finish);
-    rl.once("close", () => finish("q"));
+  }
+
+  const cursorPath = whichBin("cursor");
+  if (cursorPath) {
+    return {
+      mode: "args",
+      file: cursorPath,
+      args: ["agent", "-p", prompt],
+      label: cursorPath + " agent -p <prompt>",
+    };
+  }
+
+  return null;
+}
+
+function spawnAndWait(fileOrCmd, options) {
+  return new Promise((resolvePromise, reject) => {
+    const child =
+      options.shell === true
+        ? spawn(fileOrCmd, { ...options })
+        : spawn(fileOrCmd, options.args || [], options);
+    child.on("error", reject);
+    child.on("close", (code, signal) => {
+      resolvePromise({ code, signal });
+    });
   });
 }
 
-async function secondMenu(rl, t) {
-  console.log("  [w] Work on this   [b] Back to list   [q] Quit");
+async function launchAgent(t) {
+  console.log("");
+  console.log("Starting agent for " + t.id + "…");
+
+  const prompt = buildAgentPrompt(t);
+  const branch = "target/" + t.id;
+  const vars = {
+    PROMPT: prompt,
+    TARGET_ID: t.id,
+    TARGET_PATH: t.path,
+    REPO_ROOT,
+    BRANCH: branch,
+  };
+
+  const env = {
+    ...process.env,
+    FOSS_PROMPT: prompt,
+    FOSS_TARGET_ID: t.id,
+    FOSS_TARGET_PATH: t.path,
+    FOSS_REPO_ROOT: REPO_ROOT,
+    FOSS_BRANCH: branch,
+  };
+
+  const resolved = resolveAgentLaunch(prompt, vars);
+  const dry = isDryRun();
+
+  if (dry) {
+    console.log("  [dry-run] FOSS_AGENT_DRY_RUN / --dry-run set — not spawning.");
+    if (resolved) {
+      console.log("  [dry-run] command: " + resolved.label);
+    } else {
+      console.log(
+        "  [dry-run] no FOSS_AGENT_CMD and no agent/cursor on PATH.",
+      );
+      console.log(
+        "  Set FOSS_AGENT_CMD, e.g. FOSS_AGENT_CMD='agent -p \"$FOSS_PROMPT\"'",
+      );
+    }
+    const preview =
+      prompt.length > 400 ? prompt.slice(0, 400) + "…" : prompt;
+    console.log("  [dry-run] prompt (first ~400 chars):");
+    console.log(preview);
+    console.log("");
+    return;
+  }
+
+  if (!resolved) {
+    console.log("  No agent command configured.");
+    console.log(
+      "  Set FOSS_AGENT_CMD to launch an agent, e.g.:",
+    );
+    console.log("    FOSS_AGENT_CMD='agent -p \"$FOSS_PROMPT\"'");
+    console.log(
+      "  Placeholders: {{PROMPT}} {{TARGET_ID}} {{TARGET_PATH}} {{REPO_ROOT}} {{BRANCH}}",
+    );
+    console.log(
+      "  Env passed to the child: FOSS_PROMPT, FOSS_TARGET_ID, FOSS_TARGET_PATH, FOSS_REPO_ROOT, FOSS_BRANCH",
+    );
+    console.log("");
+    return;
+  }
+
+  const common = {
+    cwd: REPO_ROOT,
+    stdio: "inherit",
+    env,
+  };
+
+  let result;
+  if (resolved.mode === "shell") {
+    result = await spawnAndWait(resolved.cmd, { ...common, shell: true });
+  } else {
+    result = await spawnAndWait(resolved.file, {
+      ...common,
+      args: resolved.args,
+    });
+  }
+
+  if (result.code != null && result.code !== 0) {
+    console.log(
+      "  Agent exited with code " + result.code + (result.signal ? " (signal " + result.signal + ")" : "") + ".",
+    );
+  }
+  console.log("");
+}
+
+function createAsk(rl) {
+  const queue = [];
+  const waiters = [];
+  rl.on("line", (line) => {
+    if (waiters.length) waiters.shift()(line);
+    else queue.push(line);
+  });
+  rl.on("close", () => {
+    while (waiters.length) waiters.shift()(null);
+  });
+  return (prompt) => {
+    process.stdout.write(prompt);
+    return new Promise((resolve) => {
+      if (queue.length) resolve(queue.shift());
+      else waiters.push(resolve);
+    });
+  };
+}
+
+function question(ask, prompt) {
+  return ask(prompt).then((value) => (value == null ? "q" : value));
+}
+
+async function secondMenu(ask, t) {
+  console.log("  [w] Work (start agent)   [b] Back to list   [q] Quit");
   for (;;) {
-    const ans = (await question(rl, "> ")).trim().toLowerCase();
+    const ans = (await question(ask, "> ")).trim().toLowerCase();
     if (ans === "q" || ans === "quit") return "quit";
     if (ans === "b" || ans === "back" || ans === "") return "back";
     if (ans === "w" || ans === "work" || ans === "1") {
-      console.log("");
-      console.log("  You're set on " + t.id + ". Follow the next steps above.");
-      console.log("  Suggested branch: target/" + t.id);
-      console.log("");
+      await launchAgent(t);
       return "back";
     }
     console.log("  Enter w, b, or q.");
@@ -281,7 +472,9 @@ async function main() {
   const rl = readline.createInterface({
     input: process.stdin,
     output: process.stdout,
+    terminal: Boolean(process.stdin.isTTY),
   });
+  const ask = createAsk(rl);
 
   try {
     for (;;) {
@@ -294,7 +487,7 @@ async function main() {
       console.log("  [q] Quit");
       console.log("");
 
-      const ans = (await question(rl, "Pick a target number (or q): ")).trim();
+      const ans = (await question(ask, "Pick a target number (or q): ")).trim();
       if (
         ans === "" ||
         ans.toLowerCase() === "q" ||
@@ -314,7 +507,7 @@ async function main() {
       printTargetSummary(t);
       printNextSteps(t);
 
-      const next = await secondMenu(rl, t);
+      const next = await secondMenu(ask, t);
       if (next === "quit") {
         console.log("Bye.");
         break;
