@@ -101,6 +101,42 @@ Devvit is excellent for in-Reddit apps. Our forge needs to **create and update G
 
 ---
 
+## Provide a detailed description of what the Bot/App will be doing on Reddit
+
+Paste-ready for the Developer Support / Data Access Request form field of the same name (or closest label). Keep operator-neutral; fill contact email only at submit time.
+
+### Foss Arcade bridge — what the bot does on Reddit
+
+This is a **moderator support bot** for a **single subreddit**: [r/FOSSArcade](https://www.reddit.com/r/FOSSArcade). It is **not** a site-wide scraper, **not** a marketing crawler, and **not** a data-resale or ML-training pipeline. Its only job is to help that community turn **public proposal posts** into **tracked work** on the open-source GitHub org ([FossArcade/foss-arcade](https://github.com/FossArcade/foss-arcade)), and optionally leave a **short public acknowledgement** on Reddit linking back to the GitHub issue.
+
+#### On-platform behavior (Reddit)
+
+1. **Read posts in r/FOSSArcade only** — title, flair, author, permalink, and self-text (body). Example: a feature-flaired post such as a Snake high-score proposal.
+2. **Ignore noise** — skip removed/spam content, anything outside the subreddit, and duplicates (intake is **idempotent**: same post does not open a second issue).
+3. **Optional flair-aware routing** — map flair to GitHub issue **labels** only. The bot does **not** remove, ban, or otherwise moderate users.
+4. **Optional write (if approved):** at most **one** acknowledgement comment per intake event, containing the GitHub issue URL (and minimal context). No editing other people's content, no DMs, no mass commenting, no voting.
+5. **Never:** operate outside r/FOSSArcade; bulk-archive Reddit for training/resale; perform auto-mod actions (remove/ban/approve); scrape user profiles, PMs, or modmail; high-rate crawl (target **&lt;60 requests/hour**).
+
+#### Off-platform behavior
+
+Creates (and may update) GitHub issues on [FossArcade/foss-arcade](https://github.com/FossArcade/foss-arcade) with the Reddit permalink, flair, and relevant body text so the forge can track proposal → implement → merge in public.
+
+#### Volume / identity
+
+Low and bursty (human-scale subreddit). Clear identifying **User-Agent** (bot, project, contact). Respect rate limits; **back off** on HTTP 429 / errors.
+
+**Contact placeholder:** `REPLACE_WITH_CONTACT_EMAIL@example.com`
+
+---
+
+## Shorter version (character-limit fields)
+
+Use when the form truncates the detailed description:
+
+> Foss Arcade bridge is a mod-support bot for **r/FOSSArcade only**. It reads public posts (title/flair/author/permalink/body), ignores spam/duplicates, and opens matching GitHub issues on FossArcade/foss-arcade. Optional write: one acknowledgement comment with the issue URL — no DMs, no votes, no removes/bans, no other subs. Not a scraper, not resale, not ML training. Volume low (&lt;60 req/h), identifying User-Agent, backoff on 429. Contact: REPLACE_WITH_CONTACT_EMAIL@example.com
+
+---
+
 ## Suggested one-paragraph summary (form “describe your use case”)
 
 > Foss Arcade bridge is a narrow moderator tool for r/FOSSArcade only. It reads posts/comments in that single all-ages sub so approved community proposals can become GitHub issues on FossArcade/foss-arcade. It is not a scraper, not commercial resale, and not ML training harvest. Volume is low (&lt;60 req/h). Optional write is limited to acknowledgement comments linking the GitHub issue. Devvit alone cannot create those external GitHub issues. We comply with the Responsible Builder Policy, identify our User-Agent, and respect rate limits. Contact: REPLACE_WITH_CONTACT_EMAIL@example.com
