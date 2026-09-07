@@ -14,9 +14,19 @@ Add this line to each commit message:
 
     Signed-off-by: Your Name <you@example.com>
 
-Git can add it for you:
+Git can add it for you (third-party human contributors — your own name/email is fine):
 
     git commit -s -m "Your message"
+
+### Brand / agent commits
+
+When contributing as the FossArcade org brand account (**MediumSweetPotato**) or via `npm run foss` agent launch, do **not** use the workstation’s personal `user.name` / `user.email`. Plain `git commit -s` would leak that host identity into Author, Committer, and Signed-off-by.
+
+Use this one-shot form instead (sets author, committer, and Signed-off-by for that commit only; do **not** change global git config):
+
+    git -c user.name="MediumSweetPotato" -c user.email="325427902+MediumSweetPotato@users.noreply.github.com" commit -s -m "Your message"
+
+Keep DCO (`-s`) under that brand identity only for brand/agent work.
 
 Sign-off asserts (see [developercertificate.org](https://developercertificate.org/)):
 

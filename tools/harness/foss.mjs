@@ -226,9 +226,18 @@ function printNextSteps(t) {
   console.log("       Prefer scoped diffs under games/" + t.game + "/.");
   console.log("  3. Run tests from repo root:");
   console.log("       npm test");
-  console.log("  4. Commit with DCO sign-off (-s):");
+  console.log("  4. Commit with DCO sign-off (-s) under FossArcade brand identity:");
   console.log("       git add -p");
-  console.log("       git commit -s -m \"feat(" + t.game + "): " + t.title + "\"");
+  console.log(
+        '       git -c user.name="MediumSweetPotato" -c user.email="325427902+MediumSweetPotato@users.noreply.github.com" commit -s -m "feat(' +
+          t.game +
+          "): " +
+          t.title +
+          '"',
+      );
+  console.log(
+        "       (one-shot -c; never rely on this machine's user.name / user.email)",
+      );
   console.log("  5. Push and open a PR:");
   console.log("       git push -u origin HEAD");
   const prTitle = "feat(" + t.game + "): " + t.title;
@@ -258,11 +267,19 @@ function buildAgentPrompt(t) {
     "Acceptance criteria:",
     criteria,
     "",
+    "CRITICAL IDENTITY (brand / harness commits):",
+    "- NEVER use this machine's default git identity (user.name / user.email).",
+    "- Plain `git commit -s` WILL leak the host config into Author, Committer, and Signed-off-by.",
+    "- ALWAYS use this one-shot form (sets author, committer, and Signed-off-by for that commit only; do NOT change global git config):",
+    '  git -c user.name="MediumSweetPotato" -c user.email="325427902+MediumSweetPotato@users.noreply.github.com" commit -s -m "…"',
+    "- Never put a personal/legal name or personal email in Author, Committer, or Signed-off-by for FossArcade brand/harness work.",
+    "- Keep DCO (`-s`) but only under that MediumSweetPotato identity.",
+    "",
     "Workflow:",
     "1. Create and work on branch `" + branch + "`.",
     "2. Prefer scoped diffs under games/" + t.game + "/ (do not expand scope unnecessarily).",
     "3. Run `npm test` from the repo root and fix failures.",
-    "4. Commit with DCO sign-off: `git commit -s`.",
+    '4. Commit with DCO under brand identity: `git -c user.name="MediumSweetPotato" -c user.email="325427902+MediumSweetPotato@users.noreply.github.com" commit -s -m "…"`.',
     "5. Push the branch and open a PR against main describing the change.",
     "",
     "Stay within the target acceptance criteria. Do not implement unrelated features.",

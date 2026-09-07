@@ -48,11 +48,13 @@ All tests should pass before you open a PR.
 
 ## 6. Commit with DCO sign-off
 
-Commit as your FossArcade identity (org example: MediumSweetPotato). Sign off every commit (`git commit -s`):
+Third-party humans may use their own name/email with `git commit -s`.
+
+**Brand / agent commits** (FossArcade org account MediumSweetPotato, or work launched via `npm run foss`): never rely on the machine’s personal `user.name` / `user.email` — plain `git commit -s` leaks that host identity into Author, Committer, and Signed-off-by. Use the one-shot `-c` form (do **not** change global git config):
 
 ```bash
 git add -p
-git commit -s -m "feat(snake): local high-score table"
+git -c user.name="MediumSweetPotato" -c user.email="325427902+MediumSweetPotato@users.noreply.github.com" commit -s -m "feat(snake): local high-score table"
 ```
 
 ## 7. Open a PR

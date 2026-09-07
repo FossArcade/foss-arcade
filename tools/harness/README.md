@@ -29,4 +29,16 @@ Dry-run: FOSS_AGENT_DRY_RUN=1 or --dry-run prints the resolved command and first
 
 Smoke: send 1 then q on stdin; expect snake-local-hiscore listed and clean exit.
 
+## Brand identity on agent commits
+
+Agent / brand commits must not use the workstation personal git config. Plain `git commit -s` leaks host `user.name` / `user.email` into Author, Committer, and Signed-off-by.
+
+Always use the one-shot form (do not change global git config):
+
+```bash
+git -c user.name="MediumSweetPotato" -c user.email="325427902+MediumSweetPotato@users.noreply.github.com" commit -s -m "feat(snake): …"
+```
+
+`foss.mjs` next-steps and the agent prompt include this CRITICAL IDENTITY guidance. Keep DCO (`-s`) under that MediumSweetPotato identity for brand/harness work.
+
 Related: docs/harness/target.schema.md, docs/walkthroughs/implement-snake-target.md, tools/intake-write-target/.
