@@ -1,0 +1,54 @@
+# Foss Snake — game.yaml (sketch)
+# Ship/harness source of truth sketch for slug `snake`. Fields may tighten via ADR;
+# numbers here are phase-0 boot dials, not eternal law.
+
+slug: snake
+name: Foss Snake
+parent: null
+
+engine:
+  primary: web
+  # Godot later optional: same spine, different runner/budget (see docs/engines.md)
+  # secondary: godot
+  note: "v1 primary stack is web (e.g. canvas/Phaser/Svelte). Godot export is optional later, not required for harness proof."
+
+stacks:
+  - web
+  # - godot  # optional later
+
+channels:
+  - unstable
+  - stable
+  # season-N when seasons exist
+
+max_active_jobs:
+  # Tiny boot numbers — widen when soak + rollback culture works
+  races: 2
+  promote: 1
+  canary: 1
+  split_to_variant: 1
+
+ship:
+  channels: [unstable, stable]
+  saves:
+    compat_policy: stable-sticky
+    format_version: 0   # bump when save format exists
+  rollback:
+    retain_tips: 3
+  promote:
+    unstable_requires: [ci, smoke]
+    stable_requires: [playtest, regress, perf, migration, no_critical_bugs]
+    soak:
+      # Placeholders — exact thresholds TBD (see GAPS / 03b)
+      min_hours: null
+      playtest_thresholds: {}
+      notes: "Soak placeholders for phase-0; set numeric defaults before trusting stable promotes."
+    auto_stable: false
+
+shelf:
+  title: Foss Snake
+  summary: "Tiny FOSS snake — harness prover for races, channels, and mods."
+  offline_first: true
+
+targets_root: targets/
+variants_root: variants/

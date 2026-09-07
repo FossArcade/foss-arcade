@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Foss Snake — Foss Arcade</title>
+    <link rel="stylesheet" href="./src/style.css" />
+  </head>
+  <body>
+    <header>
+      <h1>Foss Snake</h1>
+      <p class="tag">Eat fruit. Grow. Don’t crash. Seeded, deterministic, offline-first.</p>
+    </header>
+    <main class="shell">
+      <section class="hud" aria-label="Run status">
+        <div class="stat">
+          <span>Score</span>
+          <strong id="score">0</strong>
+        </div>
+        <div class="stat">
+          <span>Length</span>
+          <strong id="length">3</strong>
+        </div>
+        <div class="stat">
+          <span>Status</span>
+          <strong id="status" data-status="playing">playing</strong>
+        </div>
+        <div class="stat">
+          <span>Seed</span>
+          <div class="seed-row">
+            <input id="seed" type="text" spellcheck="false" aria-label="Run seed" />
+            <button id="copy-seed" type="button">Copy</button>
+          </div>
+        </div>
+      </section>
+      <div class="board-wrap">
+        <canvas id="board" width="448" height="336" aria-label="Snake board"></canvas>
+      </div>
+      <div class="actions">
+        <button id="replay" type="button">Replay seed</button>
+        <button id="new-run" type="button">New run</button>
+      </div>
+      <p class="help">
+        <kbd>Arrows</kbd> / <kbd>WASD</kbd> steer (no 180° reverse) ·
+        <kbd>Esc</kbd> pause · <kbd>R</kbd> new run · seed is copyable for races.
+      </p>
+    </main>
+    <script type="module" src="./src/main.js"></script>
+  </body>
+</html>

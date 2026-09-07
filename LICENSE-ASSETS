@@ -1,0 +1,24 @@
+# Foss Arcade asset license
+
+Unless a file or directory declares otherwise, original Foss Arcade
+game assets in this repository (art, audio, tilesets, fonts we control
+the rights to) are dedicated to the public domain under
+**CC0 1.0 Universal**.
+
+    https://creativecommons.org/publicdomain/zero/1.0/
+
+You may copy, modify, distribute, and use them — including commercially —
+without asking permission and without attribution (attribution is still
+appreciated).
+
+## What this does *not* cover
+
+- **Game / harness code** — see root `LICENSE` (Apache-2.0) and each
+  game's `LICENSE` (Foss Snake: MIT).
+- **Docs** (this tree, DESIGN.md, ADRs, READMEs as documentation) —
+  CC-BY-4.0 unless marked otherwise. See `docs/governance/07-legal-ip.md`.
+- **Third-party assets** keep their own licenses. Declare origin, license,
+  and attribution in-tree. Mystery packs without a license are rejected.
+
+This note is **not legal advice**. Org defaults live in
+`docs/governance/07-legal-ip.md`.

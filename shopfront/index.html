@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Foss Arcade — Arcade Shelf</title>
+    <meta name="description" content="Free, open-source games for all ages. Browse the Arcade Shelf and play Foss Snake." />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="wrap">
+      <header class="hero">
+        <div class="mark">Foss Arcade</div>
+        <h1>Arcade Shelf</h1>
+        <p class="lede">
+          Free, open-source games — built in public. No paywalls. No DRM. All ages.
+          Pick a title below and play in your browser.
+        </p>
+      </header>
+
+      <div class="shelf-label">
+        <h2>On the shelf</h2>
+        <span>v0 catalog</span>
+      </div>
+
+      <section class="catalog" id="catalog" aria-label="Game catalog"></section>
+
+      <aside class="local-hint">
+        <strong>Local play:</strong> from the repo root run
+        <code>npm run shopfront</code> (this page + games on port 4322), or
+        <code>npm start</code> for Foss Snake alone on port 4321.
+        Desktop downloads arrive when the <strong>fossarcade</strong> domain ships.
+      </aside>
+
+      <footer class="site">
+        <p>
+          Workshop:
+          <a href="https://github.com/FossArcade/foss-arcade">github.com/FossArcade/foss-arcade</a>
+        </p>
+        <p>Licenses: Apache-2.0 (repo) · MIT (Foss Snake) · CC0 (original assets)</p>
+      </footer>
+    </div>
+    <script type="module" src="./shelf.js"></script>
+  </body>
+</html>

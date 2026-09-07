@@ -1,0 +1,12 @@
+node_modules/
+.DS_Store
+Thumbs.db
+*.log
+.cache/
+coverage/
+dist/
+build/
+.idea/
+.vscode/
+.env
+tools/reddit-intake/.seen.json

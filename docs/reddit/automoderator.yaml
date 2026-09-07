@@ -1,0 +1,62 @@
+# Foss Arcade — Automoderator (paste-ready draft)
+# Subreddit live: r/FOSSArcade. Paste into r/FOSSArcade/wiki/config/automoderator.
+# Keep flair names in sync with docs/reddit/flairs.md
+#
+# Docs: https://www.reddit.com/wiki/automoderator/full-documentation
+
+---
+# Require a primary flair on new submissions (mods can override)
+type: submission
+is_flairless: true
+action: remove
+action_reason: "Missing flair"
+modmail: |
+  Removed: please set a flair (newGame / feature / bug / balance / mod / promote / refactor / meta) and resubmit or ask mods to re-flair.
+comment: |
+  Thanks for posting! Please pick a **flair** so voters know the lane.
+  Templates: see the wiki / GitHub docs/reddit/templates/
+  (This removal is automatic until flair is set.)
+
+---
+# Tip when title lacks [flair] bracket (do not remove — flair UI is source of truth)
+type: submission
+~title (regex): "^\\[(newGame|feature|bug|balance|mod|promote|refactor|meta)\\]"
+moderators_exempt: true
+comment: |
+  Tip: titles work best as `[flair] short name — one-line outcome`.
+  Proposal body template: docs/reddit/templates/proposal.md on GitHub.
+
+---
+# Nudge implement-intent structure when someone declares an attempt
+type: comment
+body (regex, case-insensitive): "implement intent|claiming this|i am (going to )?(attempt|implement|race)"
+moderators_exempt: true
+comment: |
+  If you are declaring an **attempt**, please reply with the implement-intent headings
+  (Target / Engine / Approach / Balance notes / Tests / Risks / Budget).
+  Template: docs/reddit/templates/implement-intent.md
+
+---
+# Content-policy reminder on newGame and meta
+type: submission
+flair_text (includes-word, case-insensitive): ["newGame", "meta"]
+moderators_exempt: true
+comment: |
+  Reminder: Keep it **all-ages**; see content-policy.md.
+  Foss Snake was a **bootstrap seed** without a community vote; later `[newGame]` titles should be voted.
+
+---
+# Basic anti-spam: remove empty / near-empty posts
+type: submission
+body (regex): "^.{0,20}$"
+action: remove
+action_reason: "Empty or too-short body"
+comment: |
+  Please include Problem / Player value / Scope (see proposal template). Short stubs get removed.
+
+---
+# Spam heuristic keywords (adjust when live)
+type: submission
+title+body (regex, case-insensitive): "(buy followers|crypto airdrop|free nitro)"
+action: remove
+action_reason: "Spam heuristic"
