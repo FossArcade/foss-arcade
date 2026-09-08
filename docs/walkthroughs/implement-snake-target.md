@@ -48,11 +48,13 @@ All tests should pass before you open a PR.
 
 ## 6. Commit with DCO sign-off
 
-Third-party humans may use their own name/email with `git commit -s`.
+Before `git commit -s`, verify `git config user.name` and `git config user.email` are the FossArcade public contributor identity (org example: `MediumSweetPotato` / `325427902+MediumSweetPotato@users.noreply.github.com`). Never put a personal legal name or personal email in `Signed-off-by` — the sign-off must match the Git author from those settings.
 
-**Brand / agent commits** (FossArcade org account MediumSweetPotato, or work launched via `npm run foss`): never rely on the machine’s personal `user.name` / `user.email` — plain `git commit -s` leaks that host identity into Author, Committer, and Signed-off-by. Use the one-shot `-c` form (do **not** change global git config):
+**Brand / agent commits** (FossArcade org account MediumSweetPotato, or work launched via `npm run foss`): if the machine still has a personal global identity, use the one-shot `-c` form so Author, Committer, and Signed-off-by stay on the FossArcade identity (does not change global git config):
 
 ```bash
+git config user.name   # should be FossArcade identity, e.g. MediumSweetPotato
+git config user.email  # should be that account's GitHub noreply, not a personal email
 git add -p
 git -c user.name="MediumSweetPotato" -c user.email="325427902+MediumSweetPotato@users.noreply.github.com" commit -s -m "feat(snake): local high-score table"
 ```

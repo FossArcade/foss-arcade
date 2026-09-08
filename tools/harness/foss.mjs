@@ -226,7 +226,7 @@ function printNextSteps(t) {
   console.log("       Prefer scoped diffs under games/" + t.game + "/.");
   console.log("  3. Run tests from repo root:");
   console.log("       npm test");
-  console.log("  4. Commit with DCO sign-off (-s) under FossArcade brand identity:");
+  console.log("  4. Commit with DCO sign-off (-s) under FossArcade identity (no personal name/email):");
   console.log("       git add -p");
   console.log(
         '       git -c user.name="MediumSweetPotato" -c user.email="325427902+MediumSweetPotato@users.noreply.github.com" commit -s -m "feat(' +

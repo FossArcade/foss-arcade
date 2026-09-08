@@ -10,19 +10,26 @@ Read [`docs/README.md`](./docs/README.md) and [`docs/OVERVIEW.md`](./docs/OVERVI
 
 Every mergeable contribution (human or agent-assisted) must carry a **DCO sign-off**. We do **not** require a copyright-assignment CLA to a founder or studio.
 
-Add this line to each commit message:
+The sign-off must match the **Git author** (name + email) used for the commit. `git commit -s` appends `Signed-off-by` from `user.name` / `user.email`.
 
-    Signed-off-by: Your Name <you@example.com>
+For FossArcade org work, use the **public contributor identity**, not a personal legal name or personal email. Org example:
 
-Git can add it for you (third-party human contributors — your own name/email is fine):
+    Signed-off-by: MediumSweetPotato <325427902+MediumSweetPotato@users.noreply.github.com>
+
+Git can add it for you:
 
     git commit -s -m "Your message"
+
+Set **per-repo** config so a global personal identity does not leak into commits or sign-offs:
+
+    git config user.name "MediumSweetPotato"
+    git config user.email "325427902+MediumSweetPotato@users.noreply.github.com"
 
 ### Brand / agent commits
 
 When contributing as the FossArcade org brand account (**MediumSweetPotato**) or via `npm run foss` agent launch, do **not** use the workstation’s personal `user.name` / `user.email`. Plain `git commit -s` would leak that host identity into Author, Committer, and Signed-off-by.
 
-Use this one-shot form instead (sets author, committer, and Signed-off-by for that commit only; do **not** change global git config):
+Alternatively, use this one-shot form (sets author, committer, and Signed-off-by for that commit only; does not change global git config):
 
     git -c user.name="MediumSweetPotato" -c user.email="325427902+MediumSweetPotato@users.noreply.github.com" commit -s -m "Your message"
 
