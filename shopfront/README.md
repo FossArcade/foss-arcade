@@ -42,6 +42,18 @@ Pure helpers for shareable channel plus mod runs.
 See design docs. Tests via test:shopfront.
 
 
+### Run hash → Snake (smoke)
+
+Play tab Copy/Paste builds run hash links into /games/snake/. Snake applies channel + known mods from the real registry (games/snake/mods/).
+
+```bash
+npm run shopfront
+# http://localhost:4322/shopfront/game?id=snake
+# http://localhost:4322/games/snake/?run=fa1_snake_unstable_snake.mod.speed-extreme
+```
+
+See docs/design/run-hash-deepen.md. Hiscores are namespaced by canonical fa1_ in the game HUD.
+
 ## Domain
 
 Public shopfront + desktop builds will live at **fossarcade** (domain on the way). Until then, GitHub + `npm run shopfront` are the front door.

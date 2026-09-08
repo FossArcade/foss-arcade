@@ -160,3 +160,77 @@ button:hover {
     grid-template-columns: 1fr 1fr;
   }
 }
+
+.run-chrome {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+  margin: 0 0 0.75rem;
+}
+
+.run-chip {
+  display: inline-block;
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: #1c2b25;
+  color: var(--accent);
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.run-hash {
+  font-size: 0.75rem;
+  color: var(--muted);
+  word-break: break-all;
+}
+
+.run-warn {
+  margin: 0 0 0.75rem;
+  color: var(--warn);
+  font-size: 0.85rem;
+}
+
+.hiscores {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 0.75rem 0.9rem;
+}
+
+.hiscores-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.hiscores h2 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.hiscores-note {
+  margin: 0.35rem 0 0.5rem;
+  font-size: 0.8rem;
+}
+
+#hiscore-list {
+  margin: 0;
+  padding-left: 1.2rem;
+  font-variant-numeric: tabular-nums;
+}
+
+#hiscore-list .hs-rank {
+  color: var(--muted);
+  margin-right: 0.25rem;
+}
+
+.btn-quiet {
+  background: transparent;
+}
+
+.muted {
+  color: var(--muted);
+}
