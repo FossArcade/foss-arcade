@@ -20,17 +20,10 @@
 
       <div class="shelf-label">
         <h2>On the shelf</h2>
-        <span id="shelf-meta">catalog</span>
+        <span id="shelf-meta">Games</span>
       </div>
 
       <section class="catalog" id="catalog" aria-label="Game catalog"></section>
-
-      <aside class="local-hint">
-        <strong>Local play:</strong> from the repo root run
-        <code>npm run shopfront</code> (this page + games on port 4322), or
-        <code>npm start</code> for Foss Snake alone on port 4321.
-        Desktop downloads arrive when the <strong>fossarcade</strong> domain ships.
-      </aside>
 
       <footer class="site">
         <p>
@@ -38,6 +31,15 @@
           <a href="https://github.com/FossArcade/foss-arcade">github.com/FossArcade/foss-arcade</a>
         </p>
         <p>Licenses: Apache-2.0 (repo) · MIT (Foss Snake) · CC0 (original assets)</p>
+        <div class="dev-footer">
+          <h3 class="dev-footer-title">For developers</h3>
+          <p class="local-hint-inline">
+            From the repo root run <code>npm run shopfront</code>
+            (this page + games on port 4322), or <code>npm start</code>
+            for Foss Snake alone on port 4321.
+            Desktop downloads arrive when the <strong>fossarcade</strong> domain ships.
+          </p>
+        </div>
       </footer>
     </div>
     <script type="module" src="./shelf.js"></script>

@@ -231,7 +231,7 @@ export function planApplyRunSpec({
   }
   if (needsUnstableConfirm) {
     messages.push(
-      "This run uses the unstable channel (higher risk / Seed tip — not a shipped stable train)."
+      "Early test build — the polished release isn’t out yet."
     );
   }
   if (unknownMods.length) {

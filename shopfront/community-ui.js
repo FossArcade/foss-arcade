@@ -154,7 +154,7 @@ export function renderPipelineStrip(activeId = "proposal", opts = {}) {
   return `
     <nav class="pipeline-strip" aria-label="Community pipeline">
       <ol class="pipeline-list">${steps}</ol>
-      <p class="muted pipeline-hint">Highlight follows flair / status filters or a stage you select. Schema flow is storage-agnostic (ForumPort).</p>
+      <p class="muted pipeline-hint">Highlight follows the filters or stage you select. This is how ideas move from chat toward a shippable change.</p>
     </nav>`;
 }
 
@@ -236,8 +236,8 @@ export function renderConsiderationCatalog(opts = {}) {
     <section class="consideration-catalog" aria-labelledby="list-consideration-catalog">
       <h3 id="list-consideration-catalog">Consideration catalog</h3>
       <p class="muted catalog-lede">
-        Snake profiles from DESIGN + content-policy (design §D). Seed votes are
-        <strong>local ack / sunshine</strong> only — no backend. Prefer Discussions for binding debate.
+        Design trade-offs for Foss Snake. Votes here are <strong>local only</strong> (not synced).
+        Prefer GitHub Discussions when something should bind the project.
       </p>
       <div class="profile-filter" role="group" aria-label="Filter by profile">${profileChips}</div>
       <ul class="consideration-list">
@@ -270,7 +270,7 @@ function renderThreadList(title, threads, emptyLinks) {
           )
           .join("")}</ul>`
       : `<div class="empty-state">
-          <p class="muted">No items in Shelf yet (Seed read-only port returns empty until live GraphQL).</p>
+          <p class="muted">Nothing listed here yet — open GitHub to browse or start a thread.</p>
           <p class="empty-links">${emptyLinks
             .map(
               (l) =>
@@ -302,8 +302,8 @@ export function renderProposalComposer(port) {
   const composeBriefs = port.links.compose("briefs");
   return `
     <section class="compose-stub" aria-labelledby="compose-heading">
-      <h3 id="compose-heading">Compose</h3>
-      <p>Open a new Discussion (GitHub). Shelf stays on ForumPort — write API lands later. Category slugs match live Discussions (ForumPort <code>q-and-a</code> → GitHub <code>q-a</code>).</p>
+      <h3 id="compose-heading">Start a thread</h3>
+      <p>Open a new discussion on GitHub. Full in-app posting comes later — for now these links take you to the right category.</p>
       <div class="actions">
         <a class="btn btn-primary" href="${escapeAttr(
           composeProposals
@@ -345,8 +345,8 @@ export function renderPlaceholderGate() {
   return `
     <h2>Community</h2>
     <div class="gate gate-placeholder">
-      <p><strong>PlaceholderGameGate</strong> — Community e2e opens when this title is active on the Shelf (not a placeholder listing).</p>
-      <p class="muted">Persistence is ForumPort-facing (GitHub Discussions for Snake Seed). Reddit remains outreach only.</p>
+      <p><strong>Community isn’t open yet</strong> for this placeholder listing. It unlocks when the title is active on the Shelf.</p>
+      <p class="muted">Chat happens on GitHub Discussions. Reddit is optional outreach only.</p>
     </div>`;
 }
 
@@ -399,71 +399,82 @@ export async function mountTabCommunity(panel, game, port = githubDiscussionsPor
 
     const discussConsiderations = port.links.category("considerations");
 
+    const composeHref = port.links.compose("proposals");
     panel.innerHTML = `
       <h2>Community</h2>
-      <p class="community-lede">
-        Binding commons for <strong>${escapeHtml(
-          game.title
-        )}</strong> via <code>ForumPort</code>
-        (Seed adapter: GitHub Discussions). Reddit is outreach only.
-      </p>
-      ${renderPipelineStrip(pipelineActive)}
-      <div class="community-toolbar">
-        <div class="filter-block">
-          <h3 class="sr-only">Filters</h3>
-          ${renderFlairFilter(selectedFlair)}
-          ${renderStatusFilter(selectedStatus)}
-        </div>
-        <div class="actions community-actions">
-          <a class="btn btn-secondary btn-sm" href="${escapeAttr(
+      <div class="community-beginner">
+        <h3>Talk about ${escapeHtml(game.title)}</h3>
+        <p>Share ideas and bugs with other players.</p>
+        <div class="actions">
+          <a class="btn btn-primary" href="${escapeAttr(
+            composeHref
+          )}" rel="noopener noreferrer">Start a discussion</a>
+          <a class="btn btn-secondary" href="${escapeAttr(
             port.links.home
-          )}" rel="noopener noreferrer">All Discussions</a>
-          <a class="btn btn-primary btn-sm" href="${escapeAttr(
-            port.links.compose("proposals")
-          )}" rel="noopener noreferrer">Propose a change</a>
+          )}" rel="noopener noreferrer">Browse discussions</a>
+          ${
+            game.community?.subreddit
+              ? `<a class="btn btn-secondary" href="${escapeAttr(
+                  game.community.subreddit
+                )}" rel="noopener noreferrer">${escapeHtml(
+                  game.community.subredditLabel || "Chat on Reddit (optional)"
+                )}</a>`
+              : ""
+          }
         </div>
       </div>
-      ${renderThreadList("Open proposals", filterFlair(proposals), [
-        openGh("proposals", "Open proposals on GitHub"),
-        {
-          href: port.links.search(["is:open", "category:Proposals"]),
-          label: "Search proposals",
-        },
-      ])}
-      ${renderConsiderationCatalog({
-        profile: profileFilter,
-        votes: localVotes,
-        discussHref: discussConsiderations,
-      })}
-      ${renderThreadList("Consideration threads", filterFlair(considerations), [
-        openGh("considerations", "Open considerations on GitHub"),
-      ])}
-      ${renderThreadList("Living briefs", filterFlair(briefs), [
-        openGh("briefs", "Open briefs on GitHub"),
-      ])}
-      ${renderPromoteSection({
-        briefs: filterFlair(briefs),
-        gameId,
-        githubHref:
-          game.githubHref ||
-          `https://github.com/FossArcade/foss-arcade/tree/main/games/${gameId}`,
-        exported: lastExport,
-        exportFromFixture: lastExportFromFixture,
-      }).html}
-      ${renderProposalComposer(port)}
-      ${renderCategoryLinks(port)}
-      <p class="muted community-foot">
-        Adapter: <code>GitHubDiscussionsPort</code> (read-only Seed). UI never imports GraphQL field names.
-        ${
-          game.community?.subreddit
-            ? ` · Outreach: <a href="${escapeAttr(
-                game.community.subreddit
-              )}" rel="noopener noreferrer">${escapeHtml(
-                game.community.subredditLabel || "Reddit"
-              )}</a> (non-binding)`
-            : ""
-        }
-      </p>
+
+      <details class="community-advanced">
+        <summary>Advanced — shape the next update</summary>
+        <div class="community-advanced-body">
+          <p class="muted">Pipeline, filters, consideration catalog, and promote/export tools for contributors.</p>
+          ${renderPipelineStrip(pipelineActive)}
+          <div class="community-toolbar">
+            <div class="filter-block">
+              <h3 class="sr-only">Filters</h3>
+              ${renderFlairFilter(selectedFlair)}
+              ${renderStatusFilter(selectedStatus)}
+            </div>
+            <div class="actions community-actions">
+              <a class="btn btn-secondary btn-sm" href="${escapeAttr(
+                port.links.home
+              )}" rel="noopener noreferrer">All Discussions</a>
+              <a class="btn btn-primary btn-sm" href="${escapeAttr(
+                composeHref
+              )}" rel="noopener noreferrer">Propose a change</a>
+            </div>
+          </div>
+          ${renderThreadList("Open proposals", filterFlair(proposals), [
+            openGh("proposals", "Open proposals on GitHub"),
+            {
+              href: port.links.search(["is:open", "category:Proposals"]),
+              label: "Search proposals",
+            },
+          ])}
+          ${renderConsiderationCatalog({
+            profile: profileFilter,
+            votes: localVotes,
+            discussHref: discussConsiderations,
+          })}
+          ${renderThreadList("Consideration threads", filterFlair(considerations), [
+            openGh("considerations", "Open considerations on GitHub"),
+          ])}
+          ${renderThreadList("Living briefs", filterFlair(briefs), [
+            openGh("briefs", "Open briefs on GitHub"),
+          ])}
+          ${renderPromoteSection({
+            briefs: filterFlair(briefs),
+            gameId,
+            githubHref:
+              game.githubHref ||
+              `https://github.com/FossArcade/foss-arcade/tree/main/games/${gameId}`,
+            exported: lastExport,
+            exportFromFixture: lastExportFromFixture,
+          }).html}
+          ${renderProposalComposer(port)}
+          ${renderCategoryLinks(port)}
+        </div>
+      </details>
     `;
 
     for (const chip of panel.querySelectorAll("[data-flair-filter]")) {

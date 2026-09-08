@@ -169,6 +169,9 @@ button:hover {
   margin: 0 0 0.75rem;
 }
 
+#share-run {
+  font-size: 0.8rem;
+}
 .run-chip {
   display: inline-block;
   padding: 0.2rem 0.55rem;

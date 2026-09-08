@@ -95,12 +95,14 @@ describe("resolveSnakeRun", () => {
     assert.equal(r.gameOpts.tickMs, undefined);
   });
 
-  it("formatRunChip summarizes channel + mod count", () => {
+  it("formatRunChip uses human labels", () => {
+    const def = resolveSnakeRun("");
+    assert.equal(formatRunChip(def.spec, def.applied), "Early build");
     const r = resolveSnakeRun(
       "?run=fa1_snake_unstable_snake.mod.speed-extreme"
     );
-    assert.match(formatRunChip(r.spec, r.applied), /unstable/);
-    assert.match(formatRunChip(r.spec, r.applied), /1 mod/);
+    assert.match(formatRunChip(r.spec, r.applied), /Unstable/);
+    assert.match(formatRunChip(r.spec, r.applied), /1 extra/);
   });
 });
 

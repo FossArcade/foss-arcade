@@ -151,9 +151,16 @@ export function resolveSnakeRun(search, opts = {}) {
  */
 export function formatRunChip(spec, applied = []) {
   const modCount = (applied.length ? applied : spec.mods || []).length;
-  const modBit =
-    modCount === 0 ? "no mods" : `${modCount} mod${modCount === 1 ? "" : "s"}`;
-  return `${spec.channel} · ${modBit}`;
+  const channel = spec.channel || "unstable";
+  if (modCount === 0) {
+    if (channel === "unstable") return "Early build";
+    if (channel === "stable") return "Stable · no extras";
+    return `${channel} · no extras`;
+  }
+  const extras = `${modCount} extra${modCount === 1 ? "" : "s"}`;
+  if (channel === "unstable") return `Unstable · ${extras}`;
+  if (channel === "stable") return `Stable · ${extras}`;
+  return `${channel} · ${extras}`;
 }
 
 export { listModsForGame, decodeRunSpec, encodeRunSpec };

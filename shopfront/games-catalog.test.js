@@ -1,6 +1,15 @@
 import { describe, it } from "node:test";
 import assert from "node:assert";
-import { games, getGameById, sortedGames, computePopularScore } from "./games.js";
+import {
+  games,
+  getGameById,
+  sortedGames,
+  sortedPlayableGames,
+  sortedPlatformTiles,
+  computePopularScore,
+  playerFacingTags,
+  isPlatformMetaTile,
+} from "./games.js";
 import { isBriefReady, exportBriefReady } from "./brief-export.js";
 import { BRIEF_READY_SNAKE_WRAP } from "./fixtures/seed-briefs.js";
 import { createGitHubDiscussionsPort } from "./github-discussions-port.js";
@@ -18,6 +27,9 @@ describe("catalog meta tile", () => {
     assert.ok(meta.community.discussionsHref.includes("/discussions/categories/meta"));
     assert.equal(meta.forumPortMeta.port, "github-discussions");
     assert.equal(meta.placeholder, false);
+    assert.ok(isPlatformMetaTile(meta));
+    assert.match(meta.summary, /not a game/i);
+    assert.doesNotMatch(meta.summary, /ForumPort/);
   });
 
   it("keeps snake playable and sorts both listings", () => {
@@ -29,6 +41,33 @@ describe("catalog meta tile", () => {
     assert.ok(ordered.length >= 2);
     assert.ok(ordered.every((g) => typeof g.sort.popularScore === "number"));
     assert.ok(computePopularScore(snake) > 0);
+  });
+
+  it("sorts playable Snake before Platform Meta", () => {
+    const ordered = sortedGames();
+    const ids = ordered.map((g) => g.id);
+    assert.ok(ids.indexOf("snake") < ids.indexOf("platform-meta"));
+    assert.equal(ordered[0].id, "snake");
+    assert.equal(sortedPlayableGames()[0].id, "snake");
+    assert.ok(sortedPlatformTiles().every((g) => g.kind === "platform-meta"));
+    assert.ok(
+      computePopularScore(getGameById("snake")) >
+        computePopularScore(getGameById("platform-meta"))
+    );
+  });
+
+  it("exposes player-facing tags only on cards", () => {
+    const snake = getGameById("snake");
+    const visible = playerFacingTags(snake.tags);
+    assert.deepEqual(visible, ["all-ages", "web", "classic"]);
+    assert.ok(!visible.includes("harness-prover"));
+    const meta = getGameById("platform-meta");
+    assert.deepEqual(playerFacingTags(meta.tags), ["all-ages"]);
+  });
+
+  it("uses optional Reddit label copy", () => {
+    const snake = getGameById("snake");
+    assert.equal(snake.community.subredditLabel, "Chat on Reddit (optional)");
   });
 });
 

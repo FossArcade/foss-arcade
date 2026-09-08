@@ -67,29 +67,31 @@ function paintRunChrome() {
     runChipEl.textContent = formatRunChip(activeRun.spec, activeRun.applied);
   }
   if (runHashEl) {
-    runHashEl.textContent = activeRun.hash || "—";
-    runHashEl.title = activeRun.hash || "";
+    // Full run code lives in Share / Copy — keep value for the control, hide from HUD text.
+    runHashEl.textContent = "";
+    runHashEl.hidden = true;
+    runHashEl.dataset.hash = activeRun.hash || "";
   }
   if (runWarnEl) {
     const bits = [];
     if (activeRun.decodeError) bits.push(activeRun.decodeError);
     if (activeRun.unknownMods.length) {
-      bits.push(`Unknown mods ignored: ${activeRun.unknownMods.join(", ")}`);
+      bits.push(`Unknown extras ignored: ${activeRun.unknownMods.join(", ")}`);
     }
     if (activeRun.incompatibleMods.length) {
       bits.push(
-        `Incompatible mods skipped: ${activeRun.incompatibleMods
+        `Incompatible extras skipped: ${activeRun.incompatibleMods
           .map((m) => m.id)
           .join(", ")}`
       );
     }
     if (activeRun.refusedMods.length) {
       bits.push(
-        `Refused mods: ${activeRun.refusedMods.map((m) => m.id).join(", ")}`
+        `Refused extras: ${activeRun.refusedMods.map((m) => m.id).join(", ")}`
       );
     }
     if (activeRun.banner === "stub-not-shipped-stable") {
-      bits.push("Channel tip is Seed unstable (stub ≠ shipped stable).");
+      bits.push("Early test build — the polished release isn’t out yet.");
     }
     runWarnEl.textContent = bits.join(" ");
     runWarnEl.hidden = bits.length === 0;
@@ -101,7 +103,7 @@ function paintHiscores() {
   const store = window.localStorage;
   const rows = loadHiscores(store, runNs);
   if (!rows.length) {
-    hiscoreListEl.innerHTML = "<li class=\"muted\">No scores yet for this run.</li>";
+    hiscoreListEl.innerHTML = "<li class=\"muted\">No high scores yet — finish a run!</li>";
     return;
   }
   hiscoreListEl.innerHTML = rows
@@ -228,6 +230,24 @@ seedEl.addEventListener("change", () => {
   const asNum = Number(raw);
   restart(Number.isFinite(asNum) ? asNum >>> 0 : raw);
 });
+
+
+const shareRunBtn = document.getElementById("share-run");
+if (shareRunBtn) {
+  shareRunBtn.addEventListener("click", async () => {
+    const text = activeRun.hash || "";
+    if (!text) return;
+    try {
+      await navigator.clipboard.writeText(text);
+      shareRunBtn.textContent = "Copied run";
+    } catch {
+      shareRunBtn.textContent = text;
+    }
+    setTimeout(() => {
+      shareRunBtn.textContent = "Share / Copy run";
+    }, 1200);
+  });
+}
 
 paintRunChrome();
 paintHiscores();

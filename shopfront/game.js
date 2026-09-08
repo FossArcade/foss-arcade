@@ -1,4 +1,4 @@
-import { getGameById } from "./games.js";
+import { getGameById, isPlatformMetaTile, playerFacingTags } from "./games.js";
 import {
   mountTabCommunity,
   renderPlaceholderGate,
@@ -32,10 +32,13 @@ function qsId() {
   return params.get("id") || params.get("game") || "";
 }
 
-function hashTab() {
+function hashTab(game) {
   const h = (window.location.hash || "").replace(/^#/, "").toLowerCase();
-  if (["play", "about", "community", "changelog"].includes(h)) return h;
-  return "play";
+  const allowed = isPlatformMetaTile(game)
+    ? ["about", "community", "changelog"]
+    : ["play", "about", "community", "changelog"];
+  if (allowed.includes(h)) return h;
+  return isPlatformMetaTile(game) ? "about" : "play";
 }
 
 /** @type {{ game: object, spec: object, banner: string | null } | null} */
@@ -57,7 +60,6 @@ function modLabel(gameId, modId) {
   return found?.label || modId;
 }
 
-
 function renderBadges(game) {
   const bits = [];
   if (game.lifecycle) {
@@ -77,16 +79,12 @@ function renderBadges(game) {
   }
   const hints = Array.isArray(game.badgeHints) ? game.badgeHints : [];
   if (game.kind === "platform-meta" || hints.includes("platform-meta")) {
-    bits.push(`<span class="badge badge-platform-meta">platform meta</span>`);
+    bits.push(`<span class="badge badge-platform-meta">platform</span>`);
   }
   if (game.playable === false || hints.includes("not-a-game")) {
     bits.push(`<span class="badge badge-not-a-game">not a game</span>`);
   }
   return bits.join(" ");
-}
-
-function isPlatformMeta(game) {
-  return game?.kind === "platform-meta" || game?.playable === false;
 }
 
 function heroPlayHref(game) {
@@ -97,20 +95,40 @@ function heroPlayHref(game) {
 function renderHero(game) {
   const hero = document.getElementById("game-hero");
   document.title = `${game.title} — Foss Arcade`;
+  const tagsList = playerFacingTags(game.tags);
   const tags =
-    game.tags && game.tags.length
-      ? `<ul class="tags">${game.tags
+    tagsList.length
+      ? `<ul class="tags">${tagsList
           .map((t) => `<li>${escapeHtml(t)}</li>`)
           .join("")}</ul>`
       : "";
 
-  hero.innerHTML = `
-    <div class="mark">Foss Arcade · Game</div>
-    <div class="badges">${renderBadges(game)}</div>
-    <h1>${escapeHtml(game.title)}</h1>
-    <p class="lede">${escapeHtml(game.summary)}</p>
-    ${tags}
-    <div class="actions game-ctas">
+  const meta = isPlatformMetaTile(game);
+  const discuss =
+    game.community?.discussionsHref ||
+    "https://github.com/FossArcade/foss-arcade/discussions/categories/meta";
+
+  const ctas = meta
+    ? `
+      <a class="btn btn-primary" href="#community" id="hero-community">Open Community</a>
+      ${
+        game.githubHref
+          ? `<a class="btn btn-secondary" href="${escapeAttr(
+              game.githubHref
+            )}" rel="noopener noreferrer">Open repo</a>`
+          : ""
+      }
+      <a class="btn btn-secondary" href="#about">About</a>
+      ${
+        game.community?.subreddit
+          ? `<a class="btn btn-secondary" href="${escapeAttr(
+              game.community.subreddit
+            )}" rel="noopener noreferrer">${escapeHtml(
+              game.community.subredditLabel || "Chat on Reddit (optional)"
+            )}</a>`
+          : ""
+      }`
+    : `
       <a class="btn btn-primary" id="hero-play" href="${escapeAttr(
         heroPlayHref(game)
       )}">Play</a>
@@ -125,16 +143,35 @@ function renderHero(game) {
         game.community?.subreddit
           ? `<a class="btn btn-secondary" href="${escapeAttr(
               game.community.subreddit
-            )}" rel="noopener noreferrer" title="Outreach only — not binding commons">${escapeHtml(
-              game.community.subredditLabel || "Reddit"
-            )} (outreach)</a>`
+            )}" rel="noopener noreferrer">${escapeHtml(
+              game.community.subredditLabel || "Chat on Reddit (optional)"
+            )}</a>`
           : ""
-      }
+      }`;
+
+  hero.innerHTML = `
+    <div class="mark">${
+      meta ? "Foss Arcade · Platform" : "Foss Arcade · Game"
+    }</div>
+    <div class="badges">${renderBadges(game)}</div>
+    <h1>${escapeHtml(game.title)}</h1>
+    <p class="lede">${escapeHtml(game.summary)}</p>
+    ${tags}
+    <div class="actions game-ctas">
+      ${ctas}
     </div>
   `;
+
+  if (meta) {
+    document.getElementById("hero-community")?.addEventListener("click", (ev) => {
+      ev.preventDefault();
+      selectTab("community");
+    });
+  }
 }
 
 function syncPlayHrefs(game) {
+  if (isPlatformMetaTile(game)) return;
   const href = heroPlayHref(game);
   const hero = document.getElementById("hero-play");
   if (hero) hero.setAttribute("href", href);
@@ -195,8 +232,8 @@ function confirmAndApplyPlan(game, plan, hooks = {}) {
 
   if (plan.needsUnstableConfirm) {
     const msg =
-      plan.messages.find((m) => /unstable/i.test(m)) ||
-      "This run uses the unstable channel. Continue?";
+      plan.messages.find((m) => /unstable|Early test/i.test(m)) ||
+      "This is an early test build — the polished release isn’t out yet. Continue?";
     if (!confirmFn(msg)) return null;
   }
 
@@ -206,9 +243,9 @@ function confirmAndApplyPlan(game, plan, hooks = {}) {
       (m) => /Unknown|Incompatible|Conflict/i.test(m)
     );
     const msg = [
-      "Some mods cannot be applied as requested.",
+      "Some extras cannot be applied as requested.",
       ...detail,
-      "Apply a stripped-to-compatible run (drop failing mods)?",
+      "Apply a compatible run (drop failing extras)?",
     ].join("\n\n");
     if (!confirmFn(msg)) return null;
     specToApply = plan.strippedSpec;
@@ -229,7 +266,7 @@ function handlePasteRun(game, raw, hooks = {}) {
   const trimmed = String(raw || "").trim();
   if (!trimmed) {
     if (statusEl) {
-      statusEl.textContent = "Paste a fa1_… hash or channel=&mods= query first.";
+      statusEl.textContent = "Paste a run code or link first.";
       statusEl.dataset.tone = "warn";
     }
     return { ok: false, error: "empty" };
@@ -238,7 +275,7 @@ function handlePasteRun(game, raw, hooks = {}) {
   const decoded = decodePasteInput(trimmed);
   if (!decoded.ok) {
     if (statusEl) {
-      statusEl.textContent = decoded.error || "Could not decode run hash.";
+      statusEl.textContent = decoded.error || "Could not decode run code.";
       statusEl.dataset.tone = "warn";
     }
     return decoded;
@@ -253,9 +290,9 @@ function handlePasteRun(game, raw, hooks = {}) {
   const applied = confirmAndApplyPlan(game, plan, hooks);
   if (applied) {
     if (statusEl) {
-      statusEl.textContent = `Applied ${plan.hash || "run"} (channel ${
+      statusEl.textContent = `Applied run (channel ${
         applied.channel
-      }, mods: ${applied.mods.length ? applied.mods.join(", ") : "none"}).`;
+      }, extras: ${applied.mods.length ? applied.mods.join(", ") : "none"}).`;
       statusEl.dataset.tone = "ok";
     }
     return { ok: true, spec: applied, plan };
@@ -301,41 +338,18 @@ async function copyText(text) {
   }
 }
 
-/** TabPlayDownload — Default Play, channel/mods, copy/paste run hash stub */
-function renderMetaPlay(game) {
+/** Meta pages have no Play tab — panel stays empty / unused. */
+function renderMetaPlay(_game) {
   const panel = document.getElementById("panel-play");
-  const discuss =
-    game.community?.discussionsHref ||
-    "https://github.com/FossArcade/foss-arcade/discussions/categories/meta";
-  const cfg = game.forumPortMeta || {};
-  panel.innerHTML = `
-    <h2>Platform meta</h2>
-    <div class="gate gate-meta">
-      <p><strong>Not a playable game.</strong> This Shelf tile is the honest listing for
-        ForumPort / Shelf Community platform commons (Discussions <code>meta</code> category).</p>
-      <p class="muted">Seed adapter config sketch:
-        <code>{ port: "${escapeHtml(cfg.port || "github-discussions")}", repo: "${escapeHtml(
-          (cfg.owner || "FossArcade") + "/" + (cfg.repo || "foss-arcade")
-        )}", category: "${escapeHtml(cfg.category || "meta")}" }</code>
-      </p>
-      <div class="actions">
-        <a class="btn btn-primary" href="${escapeAttr(discuss)}" rel="noopener noreferrer">Open Discussions meta</a>
-        <a class="btn btn-secondary" href="${escapeAttr(
-          game.about?.designHref || "/docs/shopfront/community-forum.md"
-        )}">Community forum doc</a>
-        ${
-          game.githubHref
-            ? `<a class="btn btn-secondary" href="${escapeAttr(
-                game.githubHref
-              )}" rel="noopener noreferrer">Open shopfront files</a>`
-            : ""
-        }
-      </div>
-    </div>
-  `;
+  if (panel) panel.innerHTML = "";
 }
 
+/** TabPlay — one big Play + risk line; customize behind details */
 function renderPlay(game) {
+  if (isPlatformMetaTile(game)) {
+    renderMetaPlay(game);
+    return;
+  }
   const panel = document.getElementById("panel-play");
   const def = defaultPlayState(game);
   const spec = currentSpec();
@@ -350,6 +364,9 @@ function renderPlay(game) {
   const hashEnc = encodeRunSpec({ ...spec, game: game.id });
   const compactHash = hashEnc.ok ? hashEnc.hash : "";
 
+  const showRisk =
+    channel === "unstable" || def.banner === "stub-not-shipped-stable";
+
   const downloadBlock = game.downloadEnabled
     ? `<p><a class="btn btn-secondary" href="${escapeAttr(
         game.downloadHref
@@ -363,7 +380,7 @@ function renderPlay(game) {
 
   const modChips =
     knownMods.length === 0
-      ? `<p class="muted">No Seed mod catalog for this title yet.</p>`
+      ? `<p class="muted">No optional extras listed for this title yet.</p>`
       : `<ul class="run-mod-list">${knownMods
           .map((m) => {
             const on = mods.includes(m.id);
@@ -373,98 +390,106 @@ function renderPlay(game) {
                   on ? "checked" : ""
                 } />
                 <span>${escapeHtml(m.label)}</span>
-                <code>${escapeHtml(m.id)}</code>
               </label>
             </li>`;
           })
           .join("")}</ul>
-        <p class="muted">Seed stub: toggling mods updates share state and Play query params only — no full mod loader yet.</p>`;
+        <p class="muted">Toggling extras updates the Play link and share code for this page.</p>`;
 
   const selectedSummary = mods.length
     ? mods.map((id) => escapeHtml(modLabel(game.id, id))).join(", ")
-    : "none (Default Play = no optional mods)";
+    : "none";
+
+  const channelLabel =
+    channel === "unstable"
+      ? "Early build"
+      : channel === "stable"
+        ? "Polished release"
+        : escapeHtml(channel);
 
   panel.innerHTML = `
-    <h2>Play / Download</h2>
-    <p>Default <strong>Play</strong> targets the best shipped train via <code>defaultPlayForTile</code>
-      — today: <code>${escapeHtml(def.channel)}</code> + no optional mods
+    <h2>Play</h2>
+    <div class="play-above-fold">
+      <div class="actions play-primary-row">
+        <a class="btn btn-primary btn-play-lg" id="play-cta" href="${escapeAttr(
+          playHref
+        )}">Play ${escapeHtml(game.title)}</a>
+      </div>
       ${
-        def.banner === "stub-not-shipped-stable"
-          ? `(stub ≠ shipped <code>stable</code>)`
-          : ""
-      }.
-    </p>
-    <div class="actions">
-      <a class="btn btn-primary" id="play-cta" href="${escapeAttr(
-        playHref
-      )}">Play ${escapeHtml(game.title)}</a>
-      <button type="button" class="btn btn-secondary" id="btn-reset-default-play">Reset to Default Play</button>
+        showRisk
+          ? `<p class="play-risk" role="status">Early test build — the polished release isn’t out yet.</p>`
+          : `<p class="muted">Ready to play in your browser.</p>`
+      }
     </div>
 
-    <div class="channel-tip run-session">
-      <h3>This run</h3>
-      <p>
-        Channel: <code id="run-channel">${escapeHtml(channel)}</code>
-        ${
-          channel === "unstable"
-            ? ` <span class="badge badge-stub">unstable risk</span>`
-            : ""
-        }
-      </p>
-      <p>Mods: <span id="run-mods-summary">${selectedSummary}</span></p>
-      <p class="muted">Catalog defaultChannel: <code>${escapeHtml(
-        game.defaultChannel || "—"
-      )}</code>
-        ${
-          game.channels?.length
-            ? ` · listed: ${game.channels.map((c) => escapeHtml(c)).join(", ")}`
-            : ""
-        }
-      </p>
-      <div class="run-channel-picker" role="group" aria-label="Channel">
-        ${(game.channels || ["unstable", "stable"])
-          .map(
-            (c) =>
-              `<button type="button" class="chip${
-                c === channel ? " chip-active" : ""
-              }" data-channel="${escapeAttr(c)}">${escapeHtml(c)}</button>`
-          )
-          .join("")}
+    <details class="run-customize">
+      <summary>Customize this run</summary>
+      <div class="run-customize-body">
+        <div class="channel-tip run-session">
+          <h3>This run</h3>
+          <p>
+            Channel: <strong id="run-channel">${channelLabel}</strong>
+            ${
+              channel === "unstable"
+                ? ` <span class="badge badge-stub">early</span>`
+                : ""
+            }
+          </p>
+          <p>Extras: <span id="run-mods-summary">${selectedSummary}</span></p>
+          <div class="run-channel-picker" role="group" aria-label="Channel">
+            ${(game.channels || ["unstable", "stable"])
+              .map((c) => {
+                const label =
+                  c === "unstable"
+                    ? "Early build"
+                    : c === "stable"
+                      ? "Polished release"
+                      : c;
+                return `<button type="button" class="chip${
+                  c === channel ? " chip-active" : ""
+                }" data-channel="${escapeAttr(c)}">${escapeHtml(label)}</button>`;
+              })
+              .join("")}
+          </div>
+          <p class="actions" style="margin-top:0.75rem">
+            <button type="button" class="btn btn-secondary" id="btn-reset-default-play">Reset to default</button>
+          </p>
+        </div>
+
+        <div class="run-mods-block">
+          <h3>Extras</h3>
+          ${modChips}
+        </div>
+
+        <div class="run-hash-block">
+          <h3>Share / copy run</h3>
+          <p class="muted">Copy a run code or link so someone else can match your channel and extras.</p>
+          <p class="run-hash-display"><code id="run-hash-value">${escapeHtml(
+            compactHash
+          )}</code></p>
+          <div class="actions">
+            <button type="button" class="btn btn-secondary" id="btn-copy-hash">Copy run code</button>
+            <button type="button" class="btn btn-secondary" id="btn-copy-link">Copy run link</button>
+          </div>
+          <label class="run-paste-label" for="run-paste-input">Paste run code or link</label>
+          <div class="run-paste-row">
+            <input type="text" id="run-paste-input" class="run-paste-input"
+              placeholder="Paste a run code or link"
+              autocomplete="off" spellcheck="false" />
+            <button type="button" class="btn btn-secondary" id="btn-paste-apply">Apply</button>
+          </div>
+          <p id="run-paste-status" class="run-paste-status muted" data-tone="muted" role="status"></p>
+        </div>
+
+        <div class="download-block">
+          <h3>Download</h3>
+          ${downloadBlock}
+        </div>
       </div>
-    </div>
-
-    <div class="run-mods-block">
-      <h3>Mods / features</h3>
-      ${modChips}
-    </div>
-
-    <div class="run-hash-block">
-      <h3>Copy / Paste run</h3>
-      <p class="muted">Share channel + mods as a compact <code>fa1_…</code> hash (or verbose <code>channel=&amp;mods=</code>). Variants / pillars are never encoded.</p>
-      <p class="run-hash-display"><code id="run-hash-value">${escapeHtml(
-        compactHash
-      )}</code></p>
-      <div class="actions">
-        <button type="button" class="btn btn-secondary" id="btn-copy-hash">Copy run hash</button>
-        <button type="button" class="btn btn-secondary" id="btn-copy-link">Copy run link</button>
-      </div>
-      <label class="run-paste-label" for="run-paste-input">Paste hash or link</label>
-      <div class="run-paste-row">
-        <input type="text" id="run-paste-input" class="run-paste-input"
-          placeholder="fa1_snake_unstable_… or ?run=fa1_… / channel=&amp;mods="
-          autocomplete="off" spellcheck="false" />
-        <button type="button" class="btn btn-secondary" id="btn-paste-apply">Apply</button>
-      </div>
-      <p id="run-paste-status" class="run-paste-status muted" data-tone="muted" role="status"></p>
-    </div>
-
-    <div class="download-block">
-      <h3>Download</h3>
-      ${downloadBlock}
-    </div>
+    </details>
     ${
       game.offlineFirst
-        ? `<p class="muted">Offline-first: core loop does not require an account or network.</p>`
+        ? `<p class="muted">Offline-friendly: the core loop does not require an account or network.</p>`
         : ""
     }
   `;
@@ -484,7 +509,7 @@ function wirePlayControls(game) {
       mods: [],
     });
     if (statusEl) {
-      statusEl.textContent = "Reset to Default Play (best shipped train, no optional mods).";
+      statusEl.textContent = "Reset to default play settings.";
       statusEl.dataset.tone = "ok";
     }
   });
@@ -494,7 +519,6 @@ function wirePlayControls(game) {
       const channel = chip.getAttribute("data-channel");
       if (!channel) return;
       const next = { ...currentSpec(), game: game.id, channel };
-      // Re-check mod compatibility when switching channel
       const plan = planApplyRunSpec({
         currentGameId: game.id,
         spec: next,
@@ -503,9 +527,9 @@ function wirePlayControls(game) {
       if (plan.needsConflictConfirm) {
         const ok = window.confirm(
           [
-            `Switch to channel "${channel}"?`,
+            `Switch channel?`,
             ...plan.messages.filter((m) => /Incompatible|Conflict|Unknown/i.test(m)),
-            "Drop incompatible mods and continue?",
+            "Drop incompatible extras and continue?",
           ].join("\n\n")
         );
         if (!ok) return;
@@ -536,9 +560,9 @@ function wirePlayControls(game) {
       if (plan.needsConflictConfirm && input.checked) {
         const ok = window.confirm(
           [
-            `Enable ${id}?`,
+            `Enable this extra?`,
             ...plan.messages.filter((m) => /Incompatible|Conflict|Unknown/i.test(m)),
-            "Continue with stripped-to-compatible set?",
+            "Continue with a compatible set?",
           ].join("\n\n")
         );
         if (!ok) {
@@ -556,7 +580,7 @@ function wirePlayControls(game) {
     const enc = encodeRunSpec({ ...currentSpec(), game: game.id });
     if (!enc.ok) {
       if (statusEl) {
-        statusEl.textContent = enc.error || "Could not encode run hash.";
+        statusEl.textContent = enc.error || "Could not encode run code.";
         statusEl.dataset.tone = "warn";
       }
       return;
@@ -564,8 +588,8 @@ function wirePlayControls(game) {
     const ok = await copyText(enc.hash);
     if (statusEl) {
       statusEl.textContent = ok
-        ? `Copied hash: ${enc.hash}`
-        : `Copy failed — select and copy: ${enc.hash}`;
+        ? `Copied run code`
+        : `Copy failed — select and copy the code above`;
       statusEl.dataset.tone = ok ? "ok" : "warn";
     }
   });
@@ -579,7 +603,6 @@ function wirePlayControls(game) {
       }
       return;
     }
-    // Prefer absolute URL when served from a real origin
     let absolute = link.href;
     try {
       absolute = new URL(link.href, window.location.href).href;
@@ -589,7 +612,7 @@ function wirePlayControls(game) {
     const ok = await copyText(absolute);
     if (statusEl) {
       statusEl.textContent = ok
-        ? `Copied run link (${link.hash})`
+        ? `Copied run link`
         : `Copy failed — select and copy: ${absolute}`;
       statusEl.dataset.tone = ok ? "ok" : "warn";
     }
@@ -608,7 +631,7 @@ function wirePlayControls(game) {
   });
 }
 
-/** TabAbout — DESIGN summary, pillars, licenses, links */
+/** TabAbout — human DESIGN summary first; licenses; For contributors */
 function renderAbout(game) {
   const panel = document.getElementById("panel-about");
   const about = game.about || {};
@@ -625,14 +648,14 @@ function renderAbout(game) {
           .join("")}</ul>`
       : "";
 
+  const designSummary = about.oneLiner || game.summary;
+
   panel.innerHTML = `
     <h2>About</h2>
-    <p class="about-oneliner">${escapeHtml(
-      about.oneLiner || game.summary
-    )}</p>
+    <p class="about-oneliner">${escapeHtml(designSummary)}</p>
     ${
       about.pillars?.length
-        ? `<h3>Pillars</h3>${pillars}`
+        ? `<h3>Design pillars</h3>${pillars}`
         : ""
     }
     ${
@@ -641,11 +664,11 @@ function renderAbout(game) {
         : ""
     }
     <dl class="about-meta">
-      <div><dt>Engine</dt><dd>${escapeHtml(
-        about.engineNote || game.enginePrimary || "—"
-      )}</dd></div>
       <div><dt>Licenses</dt><dd>${escapeHtml(
         about.licenses || "See repo LICENSE files"
+      )}</dd></div>
+      <div><dt>Engine</dt><dd>${escapeHtml(
+        about.engineNote || game.enginePrimary || "—"
       )}</dd></div>
       <div><dt>Lineage</dt><dd>${escapeHtml(
         about.lineage || "—"
@@ -654,60 +677,76 @@ function renderAbout(game) {
         `${game.lifecycle || "—"} · ${game.stage || "—"}`
       )}</dd></div>
     </dl>
-    <div class="actions">
-      ${
-        about.designHref
-          ? `<a class="btn btn-secondary" href="${escapeAttr(
-              about.designHref
-            )}">Open DESIGN.md</a>`
-          : ""
-      }
-      ${
-        about.gameYamlHref
-          ? `<a class="btn btn-secondary" href="${escapeAttr(
-              about.gameYamlHref
-            )}">Open game.yaml</a>`
-          : ""
-      }
-      ${
-        game.githubHref
-          ? `<a class="btn btn-secondary" href="${escapeAttr(
-              game.githubHref
-            )}" rel="noopener noreferrer">GitHub</a>`
-          : ""
-      }
-    </div>
+    <section class="about-contributors" aria-labelledby="about-contrib">
+      <h3 id="about-contrib">For contributors</h3>
+      <p class="muted">Want to help shape this title? Open the repo or design notes on GitHub.</p>
+      <div class="actions">
+        ${
+          game.githubHref
+            ? `<a class="btn btn-primary" href="${escapeAttr(
+                game.githubHref
+              )}" rel="noopener noreferrer">GitHub</a>`
+            : ""
+        }
+        ${
+          about.designHref
+            ? `<a class="btn btn-secondary" href="${escapeAttr(
+                about.designHref
+              )}">DESIGN notes</a>`
+            : ""
+        }
+        ${
+          about.gameYamlHref
+            ? `<a class="btn btn-secondary" href="${escapeAttr(
+                about.gameYamlHref
+              )}">game.yaml</a>`
+            : ""
+        }
+        <a class="btn btn-secondary" href="https://github.com/FossArcade/foss-arcade/blob/main/CONTRIBUTING.md" rel="noopener noreferrer">Contributing guide</a>
+      </div>
+    </section>
   `;
 }
 
 /** TabCommunity — ForumPort-backed UI (Snake); PlaceholderGameGate otherwise */
 async function renderCommunity(game) {
   const panel = document.getElementById("panel-community");
-  if (game.placeholder && !isPlatformMeta(game)) {
+  if (game.placeholder && !isPlatformMetaTile(game)) {
     panel.innerHTML = renderPlaceholderGate();
     return;
   }
-  if (isPlatformMeta(game)) {
+  if (isPlatformMetaTile(game)) {
     const discuss =
       game.community?.discussionsHref ||
       "https://github.com/FossArcade/foss-arcade/discussions/categories/meta";
+    const compose = discuss.includes("/categories/")
+      ? discuss.replace(/\/categories\/meta$/, "/new?category=meta")
+      : `${discuss}/new?category=meta`;
     panel.innerHTML = `
       <h2>Community</h2>
-      <div class="gate gate-meta">
-        <p><strong>Platform meta commons.</strong> Use the GitHub Discussions
-          <code>meta</code> category for ForumPort / Shelf Community itself
-          (adapter swaps, category map, chrome). Not a game proposal lane.</p>
+      <div class="community-beginner">
+        <h3>Talk about the Arcade</h3>
+        <p>Share ideas and bugs about the Shelf and community settings — not a game proposal lane.</p>
         <div class="actions">
-          <a class="btn btn-primary" href="${escapeAttr(discuss)}" rel="noopener noreferrer">Discussions meta</a>
+          <a class="btn btn-primary" href="${escapeAttr(
+            compose
+          )}" rel="noopener noreferrer">Start a discussion</a>
           <a class="btn btn-secondary" href="${escapeAttr(
-            discuss.replace(/\/categories\/meta$/, "/new?category=meta")
-          )}" rel="noopener noreferrer">New meta discussion</a>
+            discuss
+          )}" rel="noopener noreferrer">Open Community</a>
         </div>
-        <p class="muted">See <code>docs/shopfront/community-forum.md</code> — swap via <code>[meta]</code>.</p>
-      </div>`;
+      </div>
+      <details class="community-advanced">
+        <summary>Advanced — shape the next update</summary>
+        <div class="gate gate-meta" style="margin-top:0.75rem">
+          <p>Use the GitHub Discussions <strong>meta</strong> category for Arcade-wide settings
+            (category map, community chrome, adapter swaps). Document changes in
+            <code>docs/shopfront/community-forum.md</code>.</p>
+        </div>
+      </details>`;
     return;
   }
-  panel.innerHTML = `<h2>Community</h2><p class="muted">Loading ForumPort…</p>`;
+  panel.innerHTML = `<h2>Community</h2><p class="muted">Loading…</p>`;
   try {
     await mountTabCommunity(panel, game);
   } catch (err) {
@@ -715,8 +754,10 @@ async function renderCommunity(game) {
     panel.innerHTML = `
       <h2>Community</h2>
       <div class="gate gate-stub">
-        <p><strong>Could not load Community tab.</strong> ${String(err?.message || err)}</p>
-        <p class="muted">Binding commons: Shelf Community + GitHub Discussions via ForumPort.</p>
+        <p><strong>Could not load Community tab.</strong> ${escapeHtml(
+          String(err?.message || err)
+        )}</p>
+        <p class="muted">Try opening GitHub Discussions from the game’s repo links.</p>
       </div>`;
   }
 }
@@ -724,25 +765,23 @@ async function renderCommunity(game) {
 /** TabChangelog stub */
 function renderChangelog(game) {
   const panel = document.getElementById("panel-changelog");
-  if (isPlatformMeta(game)) {
+  if (isPlatformMetaTile(game)) {
     panel.innerHTML = `
       <h2>Changelog</h2>
       <div class="gate gate-meta">
-        <p><strong>No game channel tips.</strong> Platform Meta is not on a playable release train.
-          Track ForumPort / Shelf changes via docs PRs and Discussions <code>meta</code>.</p>
+        <p><strong>No game releases here.</strong> Platform Meta is not on a playable release train.
+          Track Shelf and community changes via docs PRs and Discussions meta.</p>
       </div>`;
     return;
   }
   panel.innerHTML = `
     <h2>Changelog</h2>
     <div class="gate gate-stub">
-      <p><strong>Coming in a later slice.</strong> Channel tips, promote evidence, and freeze notes will land here.</p>
-      <p class="muted">Default tip today: <code>${escapeHtml(
-        game.defaultChannel || "unstable"
-      )}</code> — stub era, not a shipped <code>stable</code> release train.</p>
+      <p><strong>Coming soon.</strong> Release notes and tip channel history will land here.</p>
+      <p class="muted">Today’s default is an early test build — a polished release train is not out yet.</p>
       ${
         game.metrics?.lastUpdate
-          ? `<p class="muted">Catalog lastUpdate: ${escapeHtml(
+          ? `<p class="muted">Catalog updated: ${escapeHtml(
               game.metrics.lastUpdate
             )}${
               game.metrics.lastUpdateNote
@@ -758,37 +797,60 @@ function renderChangelog(game) {
 function setStubBanner(game) {
   const el = document.getElementById("stub-banner");
   if (!el) return;
+  if (isPlatformMetaTile(game)) {
+    el.hidden = true;
+    return;
+  }
   const def = defaultPlayState(game);
   const arts = artifactsForTile(game);
   const showStub =
     def.banner === "stub-not-shipped-stable" ||
     (!arts.stable &&
       (game.defaultChannel === "unstable" || game.metrics?.mode === "stub"));
-  const activeChannel = currentSpec().channel || def.channel;
 
   if (showStub) {
     el.hidden = false;
-    el.innerHTML = `<strong>Stub ≠ shipped stable.</strong> Default Play uses <code>${escapeHtml(
-      def.channel
-    )}</code> + no optional mods until a real <code>stable</code> artifact ships (catalog <code>defaultChannel</code> may stay <code>${escapeHtml(
-      game.defaultChannel || "unstable"
-    )}</code>). This session channel: <code>${escapeHtml(
-      activeChannel
-    )}</code>. Metrics and downloads are placeholders until live pipelines and desktop packages ship.`;
+    el.innerHTML = `<strong>Early test build.</strong> The polished release isn’t out yet. Metrics and desktop downloads are placeholders until live pipelines and packages ship.`;
   } else {
     el.hidden = true;
   }
 }
 
+function configureTabsForGame(game) {
+  const playTab = document.getElementById("tab-play");
+  const playPanel = document.getElementById("panel-play");
+  const meta = isPlatformMetaTile(game);
+  if (playTab) {
+    playTab.hidden = meta;
+    if (meta) {
+      playTab.setAttribute("aria-hidden", "true");
+    } else {
+      playTab.removeAttribute("aria-hidden");
+    }
+  }
+  if (playPanel && meta) {
+    playPanel.hidden = true;
+  }
+}
+
 function selectTab(name) {
+  const game = playSession?.game || getGameById(qsId());
+  if (isPlatformMetaTile(game) && name === "play") {
+    name = "about";
+  }
   const tabs = document.querySelectorAll(".tab");
   const panels = document.querySelectorAll(".tab-panel");
   for (const tab of tabs) {
+    if (tab.hidden) continue;
     const on = tab.dataset.tab === name;
     tab.setAttribute("aria-selected", on ? "true" : "false");
     tab.classList.toggle("tab-active", on);
   }
   for (const panel of panels) {
+    if (panel.id === "panel-play" && isPlatformMetaTile(game)) {
+      panel.hidden = true;
+      continue;
+    }
     panel.hidden = panel.dataset.panel !== name;
   }
   if (window.location.hash.replace(/^#/, "") !== name) {
@@ -816,6 +878,14 @@ function renderMissing(id) {
  * @param {object} game
  */
 function bootstrapRunFromUrl(game) {
+  if (isPlatformMetaTile(game)) {
+    playSession = {
+      game,
+      spec: { v: 1, game: game.id, channel: "", mods: [] },
+      banner: null,
+    };
+    return;
+  }
   const initial = resolveInitialRun(game, window.location.search);
   playSession = {
     game,
@@ -832,7 +902,6 @@ function bootstrapRunFromUrl(game) {
   if (initial.source === "default") return;
 
   if (initial.decode && !initial.decode.ok) {
-    // Bad run param — fall back to Default Play silently (banner still shows stub).
     const def = defaultPlayState(game);
     playSession.spec = {
       v: 1,
@@ -849,9 +918,7 @@ function bootstrapRunFromUrl(game) {
     knownMods: seedModsForGame(game.id),
   });
 
-  // Cross-game deep link on wrong page → confirm navigate (do not apply here).
   if (plan.needsCrossGameConfirm) {
-    // Keep Default Play visible until user confirms navigation.
     const def = defaultPlayState(game);
     playSession.spec = {
       v: 1,
@@ -859,7 +926,6 @@ function bootstrapRunFromUrl(game) {
       channel: def.channel,
       mods: [],
     };
-    // Defer confirm until after first paint so the page is usable if they cancel.
     queueMicrotask(() => {
       confirmAndApplyPlan(game, plan);
     });
@@ -880,7 +946,6 @@ function bootstrapRunFromUrl(game) {
     return;
   }
 
-  // Safe same-game apply (e.g. stable + known mods) — apply immediately.
   playSession.spec = plan.spec;
 }
 
@@ -893,6 +958,7 @@ async function main() {
   }
 
   bootstrapRunFromUrl(game);
+  configureTabsForGame(game);
   renderHero(game);
   setStubBanner(game);
   renderPlay(game);
@@ -901,10 +967,13 @@ async function main() {
   renderChangelog(game);
 
   for (const tab of document.querySelectorAll(".tab")) {
-    tab.addEventListener("click", () => selectTab(tab.dataset.tab));
+    tab.addEventListener("click", () => {
+      if (tab.hidden) return;
+      selectTab(tab.dataset.tab);
+    });
   }
-  window.addEventListener("hashchange", () => selectTab(hashTab()));
-  selectTab(hashTab());
+  window.addEventListener("hashchange", () => selectTab(hashTab(game)));
+  selectTab(hashTab(game));
 }
 
 main();
