@@ -6,6 +6,7 @@
  * so a GraphQL-backed implementation can replace this later without UI rewrites.
  *
  * @see docs/shopfront/community-forum.md
+ * @see docs/shopfront/discussion-seed.md
  */
 
 import {
@@ -16,13 +17,51 @@ import {
   SNAKE_FLAIRS,
 } from "./forum-port.js";
 
+/**
+ * Intended GitHub Discussions category slugs (community-forum.md).
+ * After Chief creates Proposals / Considerations / Briefs / Meta in the UI,
+ * flip SEED_CATEGORY_SLUG_MAP (or set useInterimSlugs: false) to these identity slugs.
+ */
+export const INTENDED_CATEGORY_SLUGS = Object.freeze({
+  announcements: "announcements",
+  proposals: "proposals",
+  considerations: "considerations",
+  briefs: "briefs",
+  "show-and-tell": "show-and-tell",
+  "q-and-a": "q-and-a",
+  meta: "meta",
+});
+
+/**
+ * Interim slug map for live DEFAULT GitHub categories (until custom ones exist).
+ * Live today: announcements, general, ideas, polls, q-a, show-and-tell.
+ * - proposals → ideas (interim)
+ * - considerations / briefs / meta → general (interim)
+ * - q-and-a → q-a (GitHub default slug; avoids 404)
+ * Chief is creating real Proposals/Considerations/Briefs/Meta; after that,
+ * set useInterimSlugs: false (or replace this map with INTENDED_CATEGORY_SLUGS).
+ */
+export const SEED_CATEGORY_SLUG_MAP = Object.freeze({
+  announcements: "announcements",
+  proposals: "ideas", // interim until Proposals category exists
+  considerations: "general", // interim until Considerations exists
+  briefs: "general", // interim until Briefs exists
+  "show-and-tell": "show-and-tell",
+  "q-and-a": "q-a",
+  meta: "general", // interim until Meta exists
+});
+
 const DEFAULT_CONFIG = {
   owner: "FossArcade",
   repo: "foss-arcade",
+  /**
+   * When true (Seed default), category URLs use SEED_CATEGORY_SLUG_MAP so links
+   * hit live DEFAULT categories instead of 404ing on not-yet-created slugs.
+   * Set false once Chief has created intended categories.
+   */
+  useInterimSlugs: true,
   /** Map ForumPort category ids → GitHub Discussions category slug fragments. */
-  categories: Object.fromEntries(
-    SNAKE_CATEGORIES.map((c) => [c.id, c.id])
-  ),
+  categories: { ...SEED_CATEGORY_SLUG_MAP },
   /** Optional label map for when GraphQL lands (UI must not read these directly). */
   labelMap: {
     flair: Object.fromEntries(SNAKE_FLAIRS.map((f) => [f.id, `type:${f.id === "bug" ? "bug" : f.id}`])),
@@ -31,17 +70,30 @@ const DEFAULT_CONFIG = {
   },
 };
 
+function resolveCategories(cfg) {
+  // When flipping off interim mode, start from intended identity slugs.
+  // Only apply categories overrides that callers pass explicitly after that flip
+  // (createGitHubDiscussionsPort strips the baked-in interim default first).
+  if (cfg.useInterimSlugs === false) {
+    return { ...INTENDED_CATEGORY_SLUGS, ...(cfg.categoryOverrides || {}) };
+  }
+  // Prefer explicit categories override; default Seed uses interim map.
+  return { ...SEED_CATEGORY_SLUG_MAP, ...(cfg.categories || {}) };
+}
+
 function discussionsBase(cfg) {
   return `https://github.com/${cfg.owner}/${cfg.repo}/discussions`;
 }
 
 function categoryUrl(cfg, categoryId) {
-  const slug = cfg.categories[categoryId] || categoryId;
+  const cats = resolveCategories(cfg);
+  const slug = cats[categoryId] || categoryId;
   return `${discussionsBase(cfg)}/categories/${encodeURIComponent(slug)}`;
 }
 
 function newDiscussionUrl(cfg, categoryId) {
-  const slug = cfg.categories[categoryId] || categoryId;
+  const cats = resolveCategories(cfg);
+  const slug = cats[categoryId] || categoryId;
   return `${discussionsBase(cfg)}/new?category=${encodeURIComponent(slug)}`;
 }
 
@@ -68,7 +120,15 @@ export function createGitHubDiscussionsPort(overrides = {}) {
   const config = {
     ...DEFAULT_CONFIG,
     ...overrides,
-    categories: { ...DEFAULT_CONFIG.categories, ...(overrides.categories || {}) },
+    categories: resolveCategories({
+      ...DEFAULT_CONFIG,
+      ...overrides,
+      // Keep interim defaults out of the identity path; only explicit overrides apply.
+      categories: overrides.categories
+        ? { ...SEED_CATEGORY_SLUG_MAP, ...overrides.categories }
+        : { ...SEED_CATEGORY_SLUG_MAP },
+      categoryOverrides: overrides.categories || {},
+    }),
     labelMap: { ...DEFAULT_CONFIG.labelMap, ...(overrides.labelMap || {}) },
   };
 

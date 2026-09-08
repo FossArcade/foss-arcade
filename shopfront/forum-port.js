@@ -160,3 +160,122 @@ export const PIPELINE_STAGES = [
   { id: "brief", label: "Brief" },
   { id: "target", label: "Target" },
 ];
+
+/**
+ * Snake consideration catalog (design §D).
+ * Accessible rows are always-on main; hardcore rows are optional mod/variant only.
+ * @typedef {Object} ConsiderationRow
+ * @property {string} id
+ * @property {string} statement
+ * @property {"always-on"|"n/a-main"|"default-off"} accessible
+ * @property {"must-not-regress"|"n/a"|"optional-mod"|"optional-variant"|"variant-only"|"n/a-official"|"labeled-override"} hardcore
+ * @property {"accessible"|"hardcore"} profile
+ */
+
+/** @type {ConsiderationRow[]} */
+export const SNAKE_CONSIDERATION_CATALOG = [
+  {
+    id: "snake.a.readability",
+    statement: "Obvious board / snake / fruit / score",
+    accessible: "always-on",
+    hardcore: "must-not-regress",
+    profile: "accessible",
+  },
+  {
+    id: "snake.a.session_length",
+    statement: "Default session ≤2 min",
+    accessible: "always-on",
+    hardcore: "labeled-override",
+    profile: "accessible",
+  },
+  {
+    id: "snake.a.offline",
+    statement: "No network / account for core play",
+    accessible: "always-on",
+    hardcore: "n/a",
+    profile: "accessible",
+  },
+  {
+    id: "snake.a.input_basic",
+    statement: "Arrows / WASD + pause / restart; touch path",
+    accessible: "always-on",
+    hardcore: "n/a",
+    profile: "accessible",
+  },
+  {
+    id: "snake.a.determinism",
+    statement: "Seed + inputs ⇒ same sim",
+    accessible: "always-on",
+    hardcore: "n/a",
+    profile: "accessible",
+  },
+  {
+    id: "snake.a.all_ages",
+    statement: "Official listing stays all-ages",
+    accessible: "always-on",
+    hardcore: "n/a",
+    profile: "accessible",
+  },
+  {
+    id: "snake.a.no_paywall",
+    statement: "No toll / DRM on official Snake",
+    accessible: "always-on",
+    hardcore: "n/a",
+    profile: "accessible",
+  },
+  {
+    id: "snake.h.speed_extreme",
+    statement: "Extreme tick allowlist",
+    accessible: "n/a-main",
+    hardcore: "optional-mod",
+    profile: "hardcore",
+  },
+  {
+    id: "snake.h.wrap_walls",
+    statement: "Wrap / portal walls",
+    accessible: "n/a-main",
+    hardcore: "optional-variant",
+    profile: "hardcore",
+  },
+  {
+    id: "snake.h.no_180_relax",
+    statement: "Allow 180° into self",
+    accessible: "default-off",
+    hardcore: "optional-variant",
+    profile: "hardcore",
+  },
+  {
+    id: "snake.h.endless",
+    statement: "No-win treadmill",
+    accessible: "n/a-main",
+    hardcore: "variant-only",
+    profile: "hardcore",
+  },
+  {
+    id: "snake.h.competitive_online",
+    statement: "Ranked online",
+    accessible: "n/a-main",
+    hardcore: "n/a-official",
+    profile: "hardcore",
+  },
+];
+
+/** Map flair / list focus → pipeline strip stage id. */
+export const FLAIR_TO_PIPELINE_STAGE = Object.freeze({
+  feature: "proposal",
+  bug: "proposal",
+  balance: "proposal",
+  mod: "proposal",
+  refactor: "proposal",
+  meta: "proposal",
+  promote: "target",
+});
+
+/** Status chip id → pipeline stage highlight. */
+export const STATUS_TO_PIPELINE_STAGE = Object.freeze({
+  "status:needs-votes": "considerations",
+  "status:brief-ready": "brief",
+  "status:accepted": "target",
+  "status:declined": "proposal",
+  "status:shipped": "target",
+});

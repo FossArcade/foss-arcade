@@ -32,6 +32,7 @@ These docs are **living**. They describe the intended model, governance, and jud
 | [harness/target.schema.md](./harness/target.schema.md) | Minimal harness target YAML schema (`games/<game>/targets/`) |
 | [design/shopfront-deepen-snake-community.md](./design/shopfront-deepen-snake-community.md) | Shopfront deepen: tile/game-page schema + Snake Community IA (ForumPort-facing) |
 | [shopfront/community-forum.md](./shopfront/community-forum.md) | Snake Seed Community: ForumPort, GitHub Discussions first port, brief export, swap-via-meta |
+| [shopfront/discussion-seed.md](./shopfront/discussion-seed.md) | Ops checklist: enable Discussions, create categories, confirm pipeline labels |
 | [walkthroughs/implement-snake-target.md](./walkthroughs/implement-snake-target.md) | Human walkthrough: implement a Snake target end-to-end |
 | [reddit/](./reddit/) | Ops kit: [SETUP.md](./reddit/SETUP.md) checklist, flairs, Automoderator, templates, welcome/about copy (paste-ready; sub [r/FOSSArcade](https://www.reddit.com/r/FOSSArcade) live) |
 

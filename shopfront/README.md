@@ -47,6 +47,13 @@ Public shopfront + desktop builds will live at **fossarcade** (domain on the way
 - `community-ui.js` — TabCommunity: FlairFilter / FlairBadge, PipelineStrip, proposal/consideration/brief lists (empty + Open on GitHub), compose stubs, PlaceholderGameGate for non-Snake.
 - Snake only for Community e2e; Changelog remains a stub.
 
+### Slice 3 (considerations + pipeline)
+
+- `SNAKE_CONSIDERATION_CATALOG` in `forum-port.js` — accessible always-on + optional hardcore rows (design §D).
+- `ConsiderationCatalog` + `ConsiderationVoteRow` in Community tab — Seed votes are local ack / sunshine stubs (link to Discussions; no backend).
+- `PipelineStrip` highlights from flair / status filters or a selected stage (not pure decoration).
+- Category seed hygiene: `SEED_CATEGORY_SLUG_MAP` interim fallbacks (`proposals→ideas`, `q-and-a→q-a`, …); checklist in `docs/shopfront/discussion-seed.md`.
+
 ## Notes
 
 - Catalog player/activity/rating stats are **stub** until a live metrics pipeline; do not invent counts. Default tip is **unstable** (stub != shipped stable).
