@@ -78,3 +78,89 @@ footer.site p { margin: 0.35rem 0; }
 .stats .muted { color: var(--muted); font-weight: 500; }
 .stats .rating { color: var(--warn); letter-spacing: 0.02em; }
 .stats a { font-weight: 600; }
+
+
+.muted { color: var(--muted); }
+.outreach-hint { font-size: 0.75rem; font-weight: 500; color: var(--muted); }
+.card-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.65rem; }
+.card-title-link { color: var(--text); text-decoration: none; }
+.card-title-link:hover { color: var(--accent); text-decoration: underline; }
+.badges { display: flex; flex-wrap: wrap; gap: 0.35rem; }
+.badge {
+  display: inline-flex; align-items: center;
+  font-size: 0.68rem; font-weight: 700; letter-spacing: 0.04em;
+  text-transform: uppercase; padding: 0.2rem 0.5rem;
+  border-radius: 999px; border: 1px solid var(--border);
+  background: var(--surface-hover); color: var(--muted);
+}
+.badge-lifecycle.lifecycle-active { color: #042f2e; background: var(--accent); border-color: transparent; }
+.badge-lifecycle.lifecycle-incubating { color: #422006; background: #fde68a; border-color: transparent; }
+.badge-lifecycle.lifecycle-proposed { color: var(--text); background: #334155; }
+.badge-lifecycle.lifecycle-season-freeze { color: #0c4a6e; background: #7dd3fc; border-color: transparent; }
+.badge-lifecycle.lifecycle-archived,
+.badge-lifecycle.lifecycle-forked-out { opacity: 0.85; }
+.badge-stage { color: var(--accent); border-color: var(--accent-dim); }
+.badge-stub { color: var(--warn); border-color: #92400e; }
+.badge-placeholder { color: #fda4af; border-color: #9f1239; }
+.sort-hint { margin: 0; font-size: 0.72rem; color: var(--muted); }
+.card-placeholder { opacity: 0.92; }
+
+/* Game page */
+.crumb { margin-bottom: 1.25rem; font-size: 0.9rem; }
+.game-hero { margin-bottom: 1.25rem; }
+.game-hero .mark {
+  display: inline-block; font-size: 0.75rem; letter-spacing: 0.12em;
+  text-transform: uppercase; color: var(--accent-dim); margin-bottom: 0.5rem;
+}
+.game-hero h1 { margin: 0.35rem 0 0.5rem; font-size: clamp(1.6rem, 3.5vw, 2.2rem); }
+.game-hero .lede { margin: 0 0 0.75rem; color: var(--muted); max-width: 40rem; }
+.game-ctas { margin-top: 0.75rem; }
+.banner {
+  margin: 0 0 1.25rem; padding: 0.85rem 1rem;
+  border-radius: 8px; border: 1px solid var(--border);
+  font-size: 0.92rem;
+}
+.banner-warn {
+  background: rgba(251, 191, 36, 0.12);
+  border-color: #92400e;
+  color: #fde68a;
+}
+.banner code { color: var(--accent); }
+.tablist {
+  display: flex; flex-wrap: wrap; gap: 0.35rem;
+  margin-bottom: 1rem; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem;
+}
+.tab {
+  appearance: none; background: transparent; border: 1px solid transparent;
+  color: var(--muted); font: inherit; font-weight: 600; font-size: 0.9rem;
+  padding: 0.45rem 0.85rem; border-radius: 8px 8px 0 0; cursor: pointer;
+}
+.tab:hover { color: var(--text); background: var(--surface-hover); }
+.tab-active, .tab[aria-selected="true"] {
+  color: var(--text); background: var(--surface);
+  border-color: var(--border); border-bottom-color: var(--surface);
+}
+.tab-panel {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 1.25rem 1.35rem; margin-bottom: 2rem;
+}
+.tab-panel h2 { margin: 0 0 0.75rem; font-size: 1.2rem; }
+.tab-panel h3 { margin: 1.1rem 0 0.4rem; font-size: 1rem; }
+.channel-tip, .download-block, .gate {
+  margin-top: 1rem; padding: 0.85rem 1rem;
+  background: rgba(0, 0, 0, 0.22); border: 1px solid var(--border); border-radius: 8px;
+}
+.gate-stub, .gate-placeholder { border-style: dashed; }
+.about-oneliner { color: var(--text); font-size: 1.05rem; }
+.pillars { margin: 0.25rem 0 0; padding-left: 1.25rem; color: var(--muted); }
+.about-meta {
+  display: grid; gap: 0.65rem; margin: 1rem 0;
+  padding: 0.85rem 1rem; background: rgba(0, 0, 0, 0.22);
+  border: 1px solid var(--border); border-radius: 8px;
+}
+.about-meta dt {
+  margin: 0; font-size: 0.68rem; font-weight: 600;
+  letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted);
+}
+.about-meta dd { margin: 0.15rem 0 0; }
+code { font-size: 0.9em; color: var(--accent); }

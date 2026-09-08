@@ -1,4 +1,4 @@
-import { games } from "./games.js";
+import { sortedGames } from "./games.js";
 
 const catalog = document.getElementById("catalog");
 
@@ -27,49 +27,97 @@ function renderSubreddit(community) {
         : c.subreddit);
     return `<a href="${escapeAttr(href)}" rel="noopener noreferrer">${escapeHtml(
       label
-    )}</a>`;
+    )}</a> <span class="outreach-hint">(outreach)</span>`;
   }
   return `<span class="muted">${escapeHtml(
     c.subredditLabel || "Coming soon"
   )}</span>`;
 }
 
-function renderRating(stats) {
-  const s = stats || {};
-  if (s.rating != null && s.rating !== "") {
-    const n = Number(s.rating);
+function renderRating(metrics) {
+  const m = metrics || {};
+  if (m.mode === "live" && m.rating != null && m.rating !== "") {
+    const n = Number(m.rating);
     const stars =
       Number.isFinite(n) && n > 0
         ? `${"★".repeat(Math.min(5, Math.round(n)))}${
             n < 5 ? "☆".repeat(Math.max(0, 5 - Math.round(n))) : ""
-          } ${escapeHtml(String(s.rating))}`
-        : escapeHtml(String(s.rating));
+          } ${escapeHtml(String(m.rating))}`
+        : escapeHtml(String(m.rating));
     return `<span class="rating" title="${escapeAttr(
-      s.ratingLabel || String(s.rating)
+      m.ratingLabel || String(m.rating)
     )}">${stars}</span>`;
   }
   return `<span class="muted">${escapeHtml(
-    s.ratingLabel || "Not rated yet"
+    m.ratingLabel || "Not rated yet"
   )}</span>`;
 }
 
-function renderStats(game) {
+function renderBadges(game) {
+  const bits = [];
+  if (game.lifecycle) {
+    bits.push(
+      `<span class="badge badge-lifecycle lifecycle-${escapeAttr(
+        game.lifecycle
+      )}" title="Lifecycle">${escapeHtml(game.lifecycle)}</span>`
+    );
+  }
+  if (game.stage) {
+    bits.push(
+      `<span class="badge badge-stage" title="Community stage">${escapeHtml(
+        game.stage
+      )}</span>`
+    );
+  }
+  if (game.placeholder) {
+    bits.push(
+      `<span class="badge badge-placeholder" title="Placeholder listing">placeholder</span>`
+    );
+  }
+  if (game.metrics?.mode === "stub") {
+    bits.push(
+      `<span class="badge badge-stub" title="Metrics are stubs — not live counts">stub metrics</span>`
+    );
+  }
+  if (!bits.length) return "";
+  return `<div class="badges" aria-label="Listing badges">${bits.join("")}</div>`;
+}
+
+function renderMetrics(game) {
   const community = game.community || {};
-  const stats = game.stats || {};
-  const playersTitle = stats.playersNote
-    ? ` title="${escapeAttr(stats.playersNote)}"`
+  const m = game.metrics || {};
+  const playersDisplay =
+    m.mode === "live" && m.players != null ? String(m.players) : "—";
+  const playersTitle = m.playersNote
+    ? ` title="${escapeAttr(m.playersNote)}"`
     : "";
-  const activityTitle = stats.activityNote
-    ? ` title="${escapeAttr(stats.activityNote)}"`
+  const activity =
+    m.activityLabel || game.stage || game.lifecycle || "—";
+  const activityTitle = m.activityNote
+    ? ` title="${escapeAttr(m.activityNote)}"`
     : "";
-  const lastUpdate = stats.lastUpdate
+  const lastUpdate = m.lastUpdate
     ? `<div class="stat">
         <dt>Updated</dt>
         <dd${
-          stats.lastUpdateNote
-            ? ` title="${escapeAttr(stats.lastUpdateNote)}"`
+          m.lastUpdateNote
+            ? ` title="${escapeAttr(m.lastUpdateNote)}"`
             : ""
-        }>${escapeHtml(stats.lastUpdate)}</dd>
+        }>${escapeHtml(m.lastUpdate)}</dd>
+      </div>`
+    : "";
+  const engine = game.enginePrimary
+    ? `<div class="stat">
+        <dt>Engine</dt>
+        <dd>${escapeHtml(game.enginePrimary)}</dd>
+      </div>`
+    : "";
+  const channel = game.defaultChannel
+    ? `<div class="stat">
+        <dt>Channel</dt>
+        <dd title="Default tip channel (stub era — not shipped stable)">${escapeHtml(
+          game.defaultChannel
+        )}</dd>
       </div>`
     : "";
 
@@ -81,25 +129,29 @@ function renderStats(game) {
       </div>
       <div class="stat">
         <dt>Players</dt>
-        <dd${playersTitle}>${escapeHtml(stats.players ?? "—")}</dd>
+        <dd${playersTitle}>${escapeHtml(playersDisplay)}</dd>
       </div>
       <div class="stat">
         <dt>Activity</dt>
-        <dd${activityTitle}>${escapeHtml(stats.activity ?? "—")}</dd>
+        <dd${activityTitle}>${escapeHtml(activity)}</dd>
       </div>
       <div class="stat">
         <dt>Rating</dt>
-        <dd>${renderRating(stats)}</dd>
+        <dd>${renderRating(m)}</dd>
       </div>
+      ${engine}
+      ${channel}
       ${lastUpdate}
     </dl>
   `;
 }
 
-for (const game of games) {
+/** CatalogTile — deepen card with badges, stub metrics, link to game page */
+function renderCatalogTile(game) {
   const card = document.createElement("article");
   card.className = "card";
   card.dataset.gameId = game.id;
+  if (game.placeholder) card.classList.add("card-placeholder");
 
   const tags =
     game.tags && game.tags.length
@@ -126,18 +178,38 @@ for (const game of games) {
       )}" rel="noopener noreferrer">Open game files</a>`
     : "";
 
+  const gamePageHref = game.href || `./game?id=${encodeURIComponent(game.id)}`;
+  const sortTip = `popularScore ${game.sort?.popularScore ?? "—"} (lifecycle + listing honesty; stub metrics excluded)`;
+
   card.innerHTML = `
-    <h3>${escapeHtml(game.title)}</h3>
+    <div class="card-head">
+      <h3><a class="card-title-link" href="${escapeAttr(gamePageHref)}">${escapeHtml(
+        game.title
+      )}</a></h3>
+      ${renderBadges(game)}
+    </div>
     <p class="summary">${escapeHtml(game.summary)}</p>
     ${tags}
-    ${renderStats(game)}
+    ${renderMetrics(game)}
     <div class="actions">
       <a class="btn btn-primary" href="${escapeAttr(game.playHref)}">Play</a>
+      <a class="btn btn-secondary" href="${escapeAttr(gamePageHref)}">Game page</a>
       ${downloadBtn}
       ${github}
     </div>
     ${downloadNote}
+    <p class="sort-hint" title="${escapeAttr(sortTip)}">Sorted by popular-first (stub-safe)</p>
   `;
 
-  catalog.appendChild(card);
+  return card;
+}
+
+const ordered = sortedGames();
+for (const game of ordered) {
+  catalog.appendChild(renderCatalogTile(game));
+}
+
+const shelfMeta = document.getElementById("shelf-meta");
+if (shelfMeta) {
+  shelfMeta.textContent = `${ordered.length} title${ordered.length === 1 ? "" : "s"} · popular-first`;
 }

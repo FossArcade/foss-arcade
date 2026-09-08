@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Foss Arcade — Game</title>
+    <meta name="description" content="Foss Arcade game page — Play, About, Community, Changelog." />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="wrap">
+      <nav class="crumb" aria-label="Breadcrumb">
+        <a href="./">← Arcade Shelf</a>
+      </nav>
+
+      <header class="game-hero" id="game-hero">
+        <p class="muted">Loading…</p>
+      </header>
+
+      <div id="stub-banner" class="banner banner-warn" hidden role="status"></div>
+
+      <div class="tablist" role="tablist" aria-label="Game sections">
+        <button type="button" class="tab" role="tab" id="tab-play" aria-controls="panel-play" aria-selected="true" data-tab="play">Play / Download</button>
+        <button type="button" class="tab" role="tab" id="tab-about" aria-controls="panel-about" aria-selected="false" data-tab="about">About</button>
+        <button type="button" class="tab" role="tab" id="tab-community" aria-controls="panel-community" aria-selected="false" data-tab="community">Community</button>
+        <button type="button" class="tab" role="tab" id="tab-changelog" aria-controls="panel-changelog" aria-selected="false" data-tab="changelog">Changelog</button>
+      </div>
+
+      <section class="tab-panel" role="tabpanel" id="panel-play" aria-labelledby="tab-play" data-panel="play"></section>
+      <section class="tab-panel" role="tabpanel" id="panel-about" aria-labelledby="tab-about" data-panel="about" hidden></section>
+      <section class="tab-panel" role="tabpanel" id="panel-community" aria-labelledby="tab-community" data-panel="community" hidden></section>
+      <section class="tab-panel" role="tabpanel" id="panel-changelog" aria-labelledby="tab-changelog" data-panel="changelog" hidden></section>
+
+      <footer class="site">
+        <p>
+          Workshop:
+          <a href="https://github.com/FossArcade/foss-arcade">github.com/FossArcade/foss-arcade</a>
+        </p>
+        <p>Licenses: Apache-2.0 (repo) · MIT (Foss Snake) · CC0 (original assets)</p>
+      </footer>
+    </div>
+    <script type="module" src="./game.js"></script>
+  </body>
+</html>

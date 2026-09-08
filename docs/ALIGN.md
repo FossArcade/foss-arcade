@@ -17,3 +17,9 @@ Docs skim for contradictions (OVERVIEW, README, shopfront, 01–11, content-poli
 - `channels/` directory sketch in lineage vs `game.yaml` channel list — layout illustrative; manifests remain source of truth.
 - Content policy / CoC split (game content vs people behavior) — deliberate, not a contradiction.
 - Reddit governance draft vs ops kit files — draft = law-when-promoted; ops kit = paste-ready; sub [r/FOSSArcade](https://www.reddit.com/r/FOSSArcade) is live.
+
+## Binding commons vs Reddit outreach (Chief locked §G.1, 2026-09-08)
+
+**Binding surface** for Snake / Shelf community process = **Shelf Community** (on-site UI) plus **GitHub Discussions / living briefs / harness targets** behind the pluggable ForumPort (see [`docs/shopfront/community-forum.md`](./shopfront/community-forum.md) and the shopfront deepen design note).
+
+**Reddit** ([r/FOSSArcade](https://www.reddit.com/r/FOSSArcade)) remains **outreach / mirror only** — not on-site Community law and not a substitute for briefs/targets in-repo. Do not invent parallel governance on Reddit templates until `reddit-formats.md` is promoted; even then, Shelf + GitHub handoff stay the binding commons for Seed.
