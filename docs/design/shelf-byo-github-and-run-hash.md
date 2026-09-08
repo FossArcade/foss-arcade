@@ -5,7 +5,7 @@
 **Constraints:** existing governance; all-ages copy; handle-only examples (`MediumSweetPotato`); docs first — **no OAuth implementation**, no full UI in this PR.  
 **Date:** 2026-09-08 (Australia/Brisbane)
 
-**Steering (Michael locked):** Foss Arcade is a **platform** for community-driven game development, not only an org catalog. Users connect **their own GitHub** and register **their own** repos/games on the Shelf. Official FossArcade titles and community-registered titles share Community / ForumPort / consideration→brief→target patterns where possible. Separately: every game’s mods/features surface compresses into a **copy-pasteable run hash** so players can share or try channel + feature sets without silent pillar rewrites (`channel ≠ mod ≠ variant`).
+**Steering (product lock):** Foss Arcade is a **platform** for community-driven game development, not only an org catalog. Users connect **their own GitHub** and register **their own** repos/games on the Shelf. Official FossArcade titles and community-registered titles share Community / ForumPort / consideration→brief→target patterns where possible. Separately: every game’s mods/features surface compresses into a **copy-pasteable run hash** so players can share or try channel + feature sets without silent pillar rewrites (`channel ≠ mod ≠ variant`).
 
 ---
 
