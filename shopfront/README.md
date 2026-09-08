@@ -36,10 +36,11 @@ Game tiles use the `GameTile` view model in `games.js`. Home: `shelf.js`. Game p
 
 Pure helpers for shareable channel plus mod runs.
 
-- run-hash.js and run-hash.test.js in this folder
-- Tests via package script test:shopfront
+- run-hash helpers and play-run apply/confirm planning
+- game.js Play tab Copy/Paste and Default Play
 
-Design and locked answers live under docs/design/shelf-byo-github-and-run-hash.md. Namespaced mod ids; short aliases are UI-only.
+See design docs. Tests via test:shopfront.
+
 
 ## Domain
 

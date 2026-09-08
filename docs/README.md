@@ -32,6 +32,7 @@ These docs are **living**. They describe the intended model, governance, and jud
 | [harness/target.schema.md](./harness/target.schema.md) | Minimal harness target YAML schema (`games/<game>/targets/`) |
 | [design/shopfront-deepen-snake-community.md](./design/shopfront-deepen-snake-community.md) | Shopfront deepen: tile/game-page schema + Snake Community IA (ForumPort-facing) |
 | [design/shelf-byo-github-and-run-hash.md](./design/shelf-byo-github-and-run-hash.md) | Shelf platform: BYO GitHub registration + feature/mod run hash (design only) |
+| [design/run-hash-deepen.md](./design/run-hash-deepen.md) | Run hash deepen: registry allocation, scale model, Play UX (aligns with shopfront/run-hash.js) |
 | [shopfront/community-forum.md](./shopfront/community-forum.md) | Snake Seed Community: ForumPort, GitHub Discussions first port, brief export, swap-via-meta |
 | [shopfront/discussion-seed.md](./shopfront/discussion-seed.md) | Ops checklist: enable Discussions, create categories, confirm pipeline labels |
 | [walkthroughs/implement-snake-target.md](./walkthroughs/implement-snake-target.md) | Human walkthrough: implement a Snake target end-to-end |

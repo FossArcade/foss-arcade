@@ -309,3 +309,49 @@ code { font-size: 0.9em; color: var(--accent); }
 .profile-hardcore { color: #422006; background: #fde68a; border-color: transparent; }
 .vote-chip { font-size: 0.75rem; }
 .filter-block { display: grid; gap: 0.35rem; }
+
+/* Play tab — run hash Copy / Paste stub */
+.run-session, .run-mods-block, .run-hash-block {
+  margin-top: 1rem; padding: 0.85rem 1rem;
+  background: rgba(0, 0, 0, 0.22); border: 1px solid var(--border); border-radius: 8px;
+}
+.run-channel-picker { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.5rem; }
+.run-mod-list { margin: 0.35rem 0 0; padding: 0; list-style: none; display: grid; gap: 0.45rem; }
+.run-mod-item label {
+  display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.45rem 0.65rem;
+  padding: 0.45rem 0.65rem; border-radius: 8px;
+  border: 1px solid var(--border); background: var(--surface);
+  cursor: pointer;
+}
+.run-mod-item.run-mod-on label {
+  border-color: var(--accent-dim);
+  background: rgba(94, 234, 212, 0.08);
+}
+.run-mod-item code { font-size: 0.75rem; color: var(--muted); }
+.run-hash-display {
+  margin: 0.5rem 0 0.75rem; padding: 0.55rem 0.75rem;
+  border-radius: 8px; border: 1px dashed var(--border);
+  background: var(--surface); overflow-wrap: anywhere;
+}
+.run-hash-display code { font-size: 0.85rem; }
+.run-paste-label {
+  display: block; margin: 0.85rem 0 0.35rem;
+  font-size: 0.78rem; font-weight: 600;
+  letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted);
+}
+.run-paste-row {
+  display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center;
+}
+.run-paste-input {
+  flex: 1 1 16rem; min-width: 0;
+  padding: 0.55rem 0.75rem; border-radius: 8px;
+  border: 1px solid var(--border); background: var(--surface);
+  color: var(--text); font: inherit; font-size: 0.9rem;
+}
+.run-paste-input:focus {
+  outline: 2px solid var(--accent-dim); outline-offset: 1px;
+}
+.run-paste-status { margin: 0.5rem 0 0; font-size: 0.85rem; }
+.run-paste-status[data-tone="ok"] { color: var(--accent); }
+.run-paste-status[data-tone="warn"] { color: var(--warn); }
+.run-paste-status[data-tone="muted"] { color: var(--muted); }
