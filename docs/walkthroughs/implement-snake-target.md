@@ -2,11 +2,21 @@
 
 Short steps for a human contributor on their own computer. Neutral — no personal names.
 
-Or just run `npm run foss` to pick a target interactively and print next steps.
+Or just run the contributor menu (`npm run foss`) to pick a target interactively and print next steps.
 
 Example target: `games/snake/targets/snake-local-hiscore.yaml` (local high-score table).
 
-## 1. Sync main
+## 1. Fork (default)
+
+Outside contributors work on a **fork**. Direct push to `FossArcade/foss-arcade` is maintainer-only.
+
+
+```bash
+gh repo fork FossArcade/foss-arcade --remote=true
+# or: GitHub UI fork, then clone your fork / add it as origin
+```
+
+## 2. Sync main
 
 ```bash
 git fetch origin
@@ -14,11 +24,11 @@ git checkout main
 git pull origin main
 ```
 
-## 2. Read the target YAML
+## 3. Read the target YAML
 
 Open `games/snake/targets/snake-local-hiscore.yaml` (or the target id you are implementing). Treat `acceptance_criteria` as the job checklist. Skim `games/snake/DESIGN.md` for design-fit.
 
-## 3. Branch
+## 4. Branch
 
 Suggested branch name pattern:
 
@@ -32,11 +42,11 @@ Or `target/<id>` for other targets.
 git checkout -b target/snake-local-hiscore
 ```
 
-## 4. Implement against acceptance criteria
+## 5. Implement against acceptance criteria
 
 Implement the feature so each AC item is satisfied. Keep the sim deterministic for a fixed seed. Prefer small, scoped diffs under `games/snake/`.
 
-## 5. Run tests
+## 6. Run tests
 
 From the repo root:
 
@@ -46,22 +56,26 @@ npm test
 
 All tests should pass before you open a PR.
 
-## 6. Commit with DCO sign-off
+## 7. Commit with DCO sign-off
 
-Before `git commit -s`, verify `git config user.name` and `git config user.email` are the FossArcade public contributor identity (org example: `MediumSweetPotato` / `325427902+MediumSweetPotato@users.noreply.github.com`). Never put a personal legal name or personal email in `Signed-off-by` — the sign-off must match the Git author from those settings.
+Use **your own** GitHub identity. Outside contributors sign off as themselves — that is correct. Placeholder shape:
 
-**Brand / agent commits** (FossArcade org account MediumSweetPotato, or work launched via `npm run foss`): if the machine still has a personal global identity, use the one-shot `-c` form so Author, Committer, and Signed-off-by stay on the FossArcade identity (does not change global git config):
+    Signed-off-by: YourGitHubName <123456+YourGitHubName@users.noreply.github.com>
+
+Do **not** put a personal legal name or personal email in examples or commits for this project's brand docs; commons contributors use their GitHub noreply (or verified) identity.
 
 ```bash
-git config user.name   # should be FossArcade identity, e.g. MediumSweetPotato
-git config user.email  # should be that account's GitHub noreply, not a personal email
+git config user.name   # your GitHub login / public name
+git config user.email  # your GitHub noreply or verified email
 git add -p
-git -c user.name="MediumSweetPotato" -c user.email="325427902+MediumSweetPotato@users.noreply.github.com" commit -s -m "feat(snake): local high-score table"
+git commit -s -m "feat(snake): local high-score table"
 ```
 
-## 7. Open a PR
+**Maintainers/brand only:** MediumSweetPotato one-shot `-c` is for org-brand commits — see CONTRIBUTING.md. Not the default for commons contributors.
 
-Push the branch and create a PR against **FossArcade/foss-arcade** `main`:
+## 8. Push fork and open a PR
+
+Push the branch to **your fork**, then create a PR against **FossArcade/foss-arcade** `main`:
 
 ```bash
 git push -u origin HEAD
@@ -81,3 +95,4 @@ Cite the target path in the PR body. Medium+ design changes still need an ADR wh
 - Target schema: [`docs/harness/target.schema.md`](../harness/target.schema.md)
 - Contributing / DCO: [`CONTRIBUTING.md`](../../CONTRIBUTING.md)
 - Snake README: [`games/snake/README.md`](../../games/snake/README.md)
+

@@ -218,31 +218,45 @@ function printTargetSummary(t) {
 function printNextSteps(t) {
   const branch = "target/" + t.id;
   const walkthrough = "docs/walkthroughs/implement-snake-target.md";
+  const prTitle = "feat(" + t.game + "): " + t.title;
+  const prBody =
+    "## Summary\nImplements target `" +
+    t.id +
+    "`.\n\n## AI disclosure\n- AI assistance: <used / not used>\n- Scope: <code / docs / …>\n";
   console.log("--- Next steps ---------------------------");
-  console.log("  1. Sync main, then branch:");
-  console.log("       git fetch origin && git checkout main && git pull origin main");
-  console.log("       git checkout -b " + branch);
-  console.log("  2. Read the target YAML and implement against acceptance_criteria.");
+  console.log("  Default path: fork → branch → implement → test → commit -s (your identity) → push fork → PR.");
+  console.log("  Direct push to FossArcade/foss-arcade is maintainer-only.");
+  console.log("  1. Fork (if origin is FossArcade/foss-arcade, work on your fork):");
+  console.log("       " + 'gh repo fork FossArcade/foss-arcade --remote=true');
+  console.log("       # or: GitHub UI fork, then clone your fork / add it as origin");
+  console.log("  2. Sync and branch:");
+  console.log("       " + 'git fetch origin && git checkout main && git pull origin main');
+  console.log("       " + 'git checkout -b ' + branch);
+  console.log("  3. Read the target YAML and implement against acceptance_criteria.");
   console.log("       Prefer scoped diffs under games/" + t.game + "/.");
-  console.log("  3. Run tests from repo root:");
-  console.log("       npm test");
-  console.log("  4. Commit with DCO sign-off (-s) under FossArcade identity (no personal name/email):");
-  console.log("       git add -p");
+  console.log("  4. Run tests from repo root:");
+  console.log("       " + 'npm test');
+  console.log("  5. Commit with DCO sign-off (-s) as yourself (your GitHub identity):");
+  console.log("       " + 'git add -p');
   console.log(
-        '       git -c user.name="MediumSweetPotato" -c user.email="325427902+MediumSweetPotato@users.noreply.github.com" commit -s -m "feat(' +
+        '       git commit -s -m "feat(' +
           t.game +
           "): " +
           t.title +
           '"',
       );
   console.log(
-        "       (one-shot -c; never rely on this machine's user.name / user.email)",
+        "       (use this environment's user.name / user.email — outside contributors sign off as themselves)",
       );
-  console.log("  5. Push and open a PR:");
-  console.log("       git push -u origin HEAD");
-  const prTitle = "feat(" + t.game + "): " + t.title;
-  const prBody = "## Summary\nImplements target `" + t.id + "`.\n\n## AI disclosure\n- AI assistance: <used / not used>\n- Scope: <code / docs / …>\n";
-  console.log("       gh pr create --repo FossArcade/foss-arcade --title " + JSON.stringify(prTitle) + " --body " + JSON.stringify(prBody));
+  console.log("  6. Push to your fork and open a PR into FossArcade:");
+  console.log("       " + 'git push -u origin HEAD');
+  console.log(
+        "       " + 'gh pr create --repo FossArcade/foss-arcade --title ' +
+          JSON.stringify(prTitle) +
+          " --body " +
+          JSON.stringify(prBody),
+      );
+  console.log("  Maintainers/brand: see CONTRIBUTING.md (MSP one-shot -c is org-brand only).");
   console.log("  Walkthrough (example): " + walkthrough);
   console.log("  Tip: press [w] to start the configured agent (FOSS_AGENT_CMD) on this target.");
   console.log("");
@@ -267,20 +281,19 @@ function buildAgentPrompt(t) {
     "Acceptance criteria:",
     criteria,
     "",
-    "CRITICAL IDENTITY (brand / harness commits):",
-    "- NEVER use this machine's default git identity (user.name / user.email).",
-    "- Plain `git commit -s` WILL leak the host config into Author, Committer, and Signed-off-by.",
-    "- ALWAYS use this one-shot form (sets author, committer, and Signed-off-by for that commit only; do NOT change global git config):",
-    '  git -c user.name="MediumSweetPotato" -c user.email="325427902+MediumSweetPotato@users.noreply.github.com" commit -s -m "…"',
-    "- Never put a personal/legal name or personal email in Author, Committer, or Signed-off-by for FossArcade brand/harness work.",
-    "- Keep DCO (`-s`) but only under that MediumSweetPotato identity.",
+    "Contributor identity (default):",
+    "- Use this environment's git identity (user.name / user.email) for Author, Committer, and DCO Signed-off-by.",
+    "- Outside contributors sign off as themselves — that is correct.",
+    "- Do NOT force MediumSweetPotato / one-shot `-c` brand identity unless this is maintainer/org-brand work.",
+    "- Maintainer/brand note: org-brand pushes use MediumSweetPotato only; see CONTRIBUTING.md. Direct push to FossArcade/foss-arcade is maintainer-only.",
     "",
-    "Workflow:",
-    "1. Create and work on branch `" + branch + "`.",
-    "2. Prefer scoped diffs under games/" + t.game + "/ (do not expand scope unnecessarily).",
-    "3. Run `npm test` from the repo root and fix failures.",
-    '4. Commit with DCO under brand identity: `git -c user.name="MediumSweetPotato" -c user.email="325427902+MediumSweetPotato@users.noreply.github.com" commit -s -m "…"`.',
-    "5. Push the branch and open a PR against main describing the change.",
+    "Workflow (fork → PR):",
+    "1. If origin is FossArcade/foss-arcade, fork first (`" + 'gh repo fork FossArcade/foss-arcade --remote=true' + "`) and work on the fork remote.",
+    "2. Create and work on branch `" + branch + "`.",
+    "3. Prefer scoped diffs under games/" + t.game + "/ (do not expand scope unnecessarily).",
+    "4. Run `npm test` from the repo root and fix failures.",
+    "5. Commit with DCO using the environment identity: `" + 'git commit -s -m \"…\"' + "`.",
+    "6. Push to the fork (`" + 'git push -u origin HEAD' + "`) and open a PR into FossArcade/foss-arcade (`gh pr create --repo FossArcade/foss-arcade …`).",
     "",
     "Stay within the target acceptance criteria. Do not implement unrelated features.",
   ].join("\n");

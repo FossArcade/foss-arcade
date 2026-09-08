@@ -6,34 +6,49 @@ Read [`docs/README.md`](./docs/README.md) and [`docs/OVERVIEW.md`](./docs/OVERVI
 
 **Not legal advice.** License defaults: [`docs/governance/07-legal-ip.md`](./docs/governance/07-legal-ip.md).
 
+## Fork and pull request (default)
+
+Outside contributors land work via **fork → branch → PR**. Direct push to `FossArcade/foss-arcade` is **maintainer-only**.
+
+1. Fork `FossArcade/foss-arcade` (GitHub UI, or `gh repo fork FossArcade/foss-arcade --clone` / `--remote=true`).
+2. Branch `target/<id>` (or another clear topic branch).
+3. Implement against the target acceptance criteria; keep diffs scoped.
+4. Run the test script from the repo root.
+5. Commit with **your own** GitHub identity and DCO sign-off (`-s`). Outside contributors sign off as themselves — that is correct. Do **not** set `user.name` to MediumSweetPotato unless you are doing org-brand/maintainer work.
+6. Push to **your fork**: `git push -u origin HEAD`.
+7. Open a PR into FossArcade: `gh pr create --repo FossArcade/foss-arcade --title…` (or GitHub Compare & pull request from the fork).
+
+Or run the contributor menu (`npm run foss`) to pick a target and print these next steps.
+
 ## Developer Certificate of Origin (DCO)
 
 Every mergeable contribution (human or agent-assisted) must carry a **DCO sign-off**. We do **not** require a copyright-assignment CLA to a founder or studio.
 
 The sign-off must match the **Git author** (name + email) used for the commit. `git commit -s` appends `Signed-off-by` from `user.name` / `user.email`.
 
-For FossArcade org work, use the **public contributor identity**, not a personal legal name or personal email. Org example:
+**Default for commons contributors:** use your own GitHub name and noreply (or verified) email. Placeholder example:
 
-    Signed-off-by: MediumSweetPotato <325427902+MediumSweetPotato@users.noreply.github.com>
+    Signed-off-by: YourGitHubName <123456+YourGitHubName@users.noreply.github.com>
 
 Git can add it for you:
 
     git commit -s -m "Your message"
 
-Set **per-repo** config so a global personal identity does not leak into commits or sign-offs:
+Configure identity for this clone if needed (your account, not the org brand):
 
-    git config user.name "MediumSweetPotato"
-    git config user.email "325427902+MediumSweetPotato@users.noreply.github.com"
+    git config user.name "YourGitHubName"
+    git config user.email "123456+YourGitHubName@users.noreply.github.com"
 
-### Brand / agent commits
+### Maintainer / brand commits (MediumSweetPotato only)
 
-When contributing as the FossArcade org brand account (**MediumSweetPotato**) or via `npm run foss` agent launch, do **not** use the workstation’s personal `user.name` / `user.email`. Plain `git commit -s` would leak that host identity into Author, Committer, and Signed-off-by.
+Org-brand and maintainer work may use the public FossArcade brand account **MediumSweetPotato**. That path is **not** the default for outside contributors.
 
-Alternatively, use this one-shot form (sets author, committer, and Signed-off-by for that commit only; does not change global git config):
+When committing as the brand (or on a maintainer machine that still has a personal global identity), use the one-shot form so Author, Committer, and Signed-off-by stay on the brand (does not change global git config):
+
 
     git -c user.name="MediumSweetPotato" -c user.email="325427902+MediumSweetPotato@users.noreply.github.com" commit -s -m "Your message"
 
-Keep DCO (`-s`) under that brand identity only for brand/agent work.
+Keep DCO (`-s`) under that brand identity only for org-brand/maintainer work. See also [`tools/harness/README.md`](./tools/harness/README.md).
 
 Sign-off asserts (see [developercertificate.org](https://developercertificate.org/)):
 
@@ -58,10 +73,10 @@ Disclosure does **not** waive DCO. Do not paste memorized proprietary blobs. "Th
 
 ## How to work
 
-1. Open an issue or cite an accepted target / ADR for medium+ game changes.
+1. Fork the repo (default), then open an issue or cite an accepted target / ADR for medium+ game changes.
 2. Keep diffs scoped. Do not touch other games or harness control-plane files unless the job says so.
 3. Run the test script from the repo root. Keep the snake sim deterministic.
-4. Sign off (DCO) and include the AI disclosure in the PR body.
+4. Sign off (DCO) with your own identity and include the AI disclosure in the PR body.
 5. Treat `DESIGN.md` as law. Pillar-bending work belongs in `variants/` or a slow-lane ADR.
 
 ## Licenses on new work

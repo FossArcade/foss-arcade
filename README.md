@@ -20,13 +20,15 @@ More games will show up here as the commons grows.
 
 ## Contribute (pick a target)
 
+Default contribute path: **fork → PR** (your GitHub account). Direct push to FossArcade/foss-arcade is maintainer-only. See [CONTRIBUTING.md](./CONTRIBUTING.md).
+
 Contributor entrypoint:
 
 ```
 npm run foss
 ```
 
-Interactive list of open harness targets, summary, and next steps. Press w to start the configured agent (FOSS_AGENT_CMD). See tools/harness/README.md.
+Interactive list of open harness targets, summary, and next steps (fork → branch → test → commit -s as yourself → push fork → PR). Press w to start the configured agent (FOSS_AGENT_CMD). See tools/harness/README.md.
 
 
 ## What’s this repo for?
