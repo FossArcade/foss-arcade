@@ -179,6 +179,8 @@ Cold-start honesty: do **not** block Seed Snake on OAuth theater (`10-cold-start
 
 ## Section 2 — Feature/mod run hash
 
+**Deepen:** allocation, scale, and Play UX detail — [run-hash-deepen.md](./run-hash-deepen.md).
+
 ### 2.1 Problem
 
 Players and racers need a **shareable** way to say “play this channel with these mods” without burying settings, and without pretending a mod is a variant. Default Play must stay boring and safe: **stable + no optional mods**. Unstable + experimental packs stay one paste away.
@@ -324,6 +326,7 @@ Marked **locked for Seed/Village** — implementers should treat these as settle
 - [Cold-start dials](../governance/10-cold-start.md) — no City theater at Seed; identity optional to play  
 - [Game lifecycle](../governance/11-game-lifecycle.md) — badges; archive/sunset  
 - [ALIGN.md](../ALIGN.md) — binding commons = Shelf + GitHub; Reddit outreach only  
+- [Run hash deepen](./run-hash-deepen.md) — registry allocation, scale, Play UX
 - `shopfront/games.js` — current tile fields to extend
 
 ---
