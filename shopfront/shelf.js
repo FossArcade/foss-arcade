@@ -1,4 +1,9 @@
-import { sortedGames } from "./games.js";
+import {
+  sortedPlayableGames,
+  sortedPlatformTiles,
+  playerFacingTags,
+  isPlatformMetaTile,
+} from "./games.js";
 
 const catalog = document.getElementById("catalog");
 
@@ -20,14 +25,10 @@ function renderSubreddit(community) {
     const href = String(c.subreddit).startsWith("http")
       ? c.subreddit
       : `https://reddit.com/${String(c.subreddit).replace(/^\/?/, "")}`;
-    const label =
-      c.subredditLabel ||
-      (String(c.subreddit).startsWith("http")
-        ? c.subreddit.replace(/^https?:\/\/(www\.)?reddit\.com\//i, "r/")
-        : c.subreddit);
+    const label = c.subredditLabel || "Chat on Reddit (optional)";
     return `<a href="${escapeAttr(href)}" rel="noopener noreferrer">${escapeHtml(
       label
-    )}</a> <span class="outreach-hint">(outreach)</span>`;
+    )}</a>`;
   }
   return `<span class="muted">${escapeHtml(
     c.subredditLabel || "Coming soon"
@@ -74,15 +75,10 @@ function renderBadges(game) {
       `<span class="badge badge-placeholder" title="Placeholder listing">placeholder</span>`
     );
   }
-  if (game.metrics?.mode === "stub") {
-    bits.push(
-      `<span class="badge badge-stub" title="Metrics are stubs — not live counts">stub metrics</span>`
-    );
-  }
   const hints = Array.isArray(game.badgeHints) ? game.badgeHints : [];
   if (game.kind === "platform-meta" || hints.includes("platform-meta")) {
     bits.push(
-      `<span class="badge badge-platform-meta" title="Platform listing — ForumPort / Shelf meta">platform meta</span>`
+      `<span class="badge badge-platform-meta" title="Platform listing — Arcade settings & community">platform</span>`
     );
   }
   if (game.playable === false || hints.includes("not-a-game")) {
@@ -123,19 +119,11 @@ function renderMetrics(game) {
         <dd>${escapeHtml(game.enginePrimary)}</dd>
       </div>`
     : "";
-  const channel = game.defaultChannel
-    ? `<div class="stat">
-        <dt>Channel</dt>
-        <dd title="Default tip channel (stub era — not shipped stable)">${escapeHtml(
-          game.defaultChannel
-        )}</dd>
-      </div>`
-    : "";
 
   return `
     <dl class="stats" aria-label="Storefront details">
       <div class="stat">
-        <dt>Subreddit</dt>
+        <dt>Community</dt>
         <dd>${renderSubreddit(community)}</dd>
       </div>
       <div class="stat">
@@ -151,22 +139,22 @@ function renderMetrics(game) {
         <dd>${renderRating(m)}</dd>
       </div>
       ${engine}
-      ${channel}
       ${lastUpdate}
     </dl>
   `;
 }
 
-/** CatalogTile — deepen card with badges, stub metrics, link to game page */
+/** CatalogTile — deepen card with badges, link to game page */
 function renderCatalogTile(game) {
   const card = document.createElement("article");
   card.className = "card";
   card.dataset.gameId = game.id;
   if (game.placeholder) card.classList.add("card-placeholder");
 
+  const visibleTags = playerFacingTags(game.tags);
   const tags =
-    game.tags && game.tags.length
-      ? `<ul class="tags">${game.tags
+    visibleTags.length
+      ? `<ul class="tags">${visibleTags
           .map((t) => `<li>${escapeHtml(t)}</li>`)
           .join("")}</ul>`
       : "";
@@ -186,25 +174,30 @@ function renderCatalogTile(game) {
   const github = game.githubHref
     ? `<a class="btn btn-secondary" href="${escapeAttr(
         game.githubHref
-      )}" rel="noopener noreferrer">Open game files</a>`
+      )}" rel="noopener noreferrer">${
+        isPlatformMetaTile(game) ? "Open repo" : "Open game files"
+      }</a>`
     : "";
 
   const gamePageHref = game.href || `./game?id=${encodeURIComponent(game.id)}`;
-  const sortTip = `popularScore ${game.sort?.popularScore ?? "—"} (lifecycle + listing honesty; stub metrics excluded)`;
 
-  const isMeta = game.kind === "platform-meta" || game.playable === false;
+  const isMeta = isPlatformMetaTile(game);
   if (isMeta) card.classList.add("card-platform-meta");
   const metaDiscuss =
     game.community?.discussionsHref ||
     "https://github.com/FossArcade/foss-arcade/discussions/categories/meta";
   const primaryCta = isMeta
-    ? `<a class="btn btn-primary" href="${escapeAttr(gamePageHref)}">Open meta</a>`
+    ? `<a class="btn btn-primary" href="${escapeAttr(
+        `${gamePageHref}#community`
+      )}">Open Community</a>`
     : `<a class="btn btn-primary" href="${escapeAttr(game.playHref)}">Play</a>`;
   const secondaryPage = isMeta
-    ? `<a class="btn btn-secondary" href="${escapeAttr(gamePageHref)}">Meta page</a>`
+    ? `<a class="btn btn-secondary" href="${escapeAttr(gamePageHref)}">About</a>`
     : `<a class="btn btn-secondary" href="${escapeAttr(gamePageHref)}">Game page</a>`;
   const discussBtn = isMeta
-    ? `<a class="btn btn-secondary" href="${escapeAttr(metaDiscuss)}" rel="noopener noreferrer">Discussions meta</a>`
+    ? `<a class="btn btn-secondary" href="${escapeAttr(
+        metaDiscuss
+      )}" rel="noopener noreferrer">Discussions</a>`
     : "";
 
   card.innerHTML = `
@@ -224,21 +217,48 @@ function renderCatalogTile(game) {
       ${isMeta ? "" : downloadBtn}
       ${github}
     </div>
-    ${isMeta ? `<p class="note">Honest listing — not a playable Foss Arcade game.</p>` : downloadNote}
-    <p class="sort-hint" title="${escapeAttr(sortTip)}">Sorted by popular-first (stub-safe)</p>
+    ${
+      isMeta
+        ? `<p class="note">Settings &amp; community for the Arcade itself — not a game.</p>`
+        : downloadNote
+    }
   `;
 
   return card;
 }
 
-const ordered = sortedGames();
-for (const game of ordered) {
-  catalog.appendChild(renderCatalogTile(game));
+function appendSection(title, games, { labelId } = {}) {
+  if (!games.length) return;
+  const section = document.createElement("section");
+  section.className = "catalog-section";
+  section.setAttribute("aria-labelledby", labelId);
+  const heading = document.createElement("h3");
+  heading.id = labelId;
+  heading.className = "catalog-section-title";
+  heading.textContent = title;
+  section.appendChild(heading);
+  const grid = document.createElement("div");
+  grid.className = "catalog-grid";
+  for (const game of games) {
+    grid.appendChild(renderCatalogTile(game));
+  }
+  section.appendChild(grid);
+  catalog.appendChild(section);
 }
+
+const playable = sortedPlayableGames();
+const platform = sortedPlatformTiles();
+
+appendSection("Games", playable, { labelId: "catalog-games" });
+appendSection("Platform", platform, { labelId: "catalog-platform" });
 
 const shelfMeta = document.getElementById("shelf-meta");
 if (shelfMeta) {
-  const playableCount = ordered.filter((g) => g.playable !== false && g.kind !== "platform-meta").length;
-  const metaCount = ordered.length - playableCount;
-  shelfMeta.textContent = `${ordered.length} listing${ordered.length === 1 ? "" : "s"} (${playableCount} playable${metaCount ? `, ${metaCount} meta` : ""}) · popular-first`;
+  const n = playable.length;
+  shelfMeta.textContent =
+    n === 0
+      ? "Early catalog"
+      : n === 1
+        ? "Games · Early catalog"
+        : `Games · ${n} titles`;
 }

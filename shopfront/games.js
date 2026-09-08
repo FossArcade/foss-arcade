@@ -13,6 +13,27 @@ const LIFECYCLE_WEIGHT = {
   "forked-out": 0,
 };
 
+/** Tags safe to show on Shelf cards (player-facing). Forge/dev tags stay in About. */
+export const PLAYER_FACING_TAGS = new Set(["all-ages", "classic", "web"]);
+
+/** Forge / adapter tags hidden from Shelf cards (ok in About / docs). */
+export const HIDDEN_CARD_TAGS = new Set([
+  "harness-prover",
+  "forumport",
+  "meta",
+  "platform",
+]);
+
+/**
+ * Filter tags for player-facing Shelf / hero chips.
+ * @param {string[] | undefined} tags
+ * @returns {string[]}
+ */
+export function playerFacingTags(tags) {
+  if (!Array.isArray(tags)) return [];
+  return tags.filter((t) => PLAYER_FACING_TAGS.has(t));
+}
+
 function clamp(n, lo, hi) {
   return Math.min(hi, Math.max(lo, n));
 }
@@ -20,6 +41,7 @@ function clamp(n, lo, hi) {
 /**
  * Popular-first score from design doc §B.
  * Stub metrics: ignore fake players/ratings/forumHeat; openTargets still count when set.
+ * Platform / non-playable tiles get a large negative bias so games always outrank meta.
  */
 export function computePopularScore(tile) {
   const m = tile.metrics || {};
@@ -36,7 +58,21 @@ export function computePopularScore(tile) {
     score += 1 * rating * Math.log1p(count);
     score += 0.001 * (m.players ?? 0);
   }
+  if (isPlatformMetaTile(tile)) {
+    score -= 100000;
+  }
   return score;
+}
+
+/** Honest platform / non-game listing (not a playable title). */
+export function isPlatformMetaTile(tile) {
+  if (!tile) return false;
+  return (
+    tile.kind === "platform-meta" ||
+    tile.id === "platform-meta" ||
+    tile.playable === false ||
+    (Array.isArray(tile.badgeHints) && tile.badgeHints.includes("platform-meta"))
+  );
 }
 
 function enrichTile(raw) {
@@ -63,10 +99,13 @@ function enrichTile(raw) {
   const lastUpdateTs = metrics.lastUpdate
     ? Date.parse(metrics.lastUpdate)
     : 0;
+  const platform = isPlatformMetaTile(tile);
   tile.sort = {
     popularScore: computePopularScore(tile),
     lastUpdateTs: Number.isFinite(lastUpdateTs) ? lastUpdateTs : 0,
     titleKey: String(tile.title || tile.id || "").toLowerCase(),
+    /** 0 = playable game, 1 = platform/meta (always after games) */
+    sectionWeight: platform ? 1 : 0,
   };
   return tile;
 }
@@ -97,7 +136,7 @@ const RAW_GAMES = [
     badgeHints: [],
     community: {
       subreddit: "https://www.reddit.com/r/FOSSArcade",
-      subredditLabel: "r/FOSSArcade",
+      subredditLabel: "Chat on Reddit (optional)",
       forumPath: "/shopfront/game?id=snake#community",
       persistenceHint: "pluggable",
     },
@@ -106,12 +145,12 @@ const RAW_GAMES = [
       players: null,
       playersNote: "Tracked when live metrics ship",
       activityLabel: "Seed",
-      activityNote: "Bootstrap catalog entry — stub metrics only",
+      activityNote: "Early catalog entry",
       rating: null,
       ratingLabel: "Not rated yet",
       ratingCount: null,
       lastUpdate: "2026-09-05",
-      lastUpdateNote: "Initial stub on the shelf",
+      lastUpdateNote: "Initial listing on the shelf",
       openTargets: null,
       forumHeat7d: null,
     },
@@ -144,7 +183,7 @@ const RAW_GAMES = [
     id: "platform-meta",
     title: "Platform Meta",
     summary:
-      "Not a playable game — Shelf + ForumPort platform commons. Discusses Discussions categories, adapter swaps, and Community chrome for the Arcade itself.",
+      "Settings & community for the Arcade itself — not a game. Talk about the Shelf, Discussions categories, and how community chrome works.",
     kind: "platform-meta",
     lifecycle: "active",
     stage: "Seed",
@@ -166,7 +205,7 @@ const RAW_GAMES = [
     badgeHints: ["platform-meta", "not-a-game"],
     community: {
       subreddit: "https://www.reddit.com/r/FOSSArcade",
-      subredditLabel: "r/FOSSArcade",
+      subredditLabel: "Chat on Reddit (optional)",
       forumPath: "/shopfront/game?id=platform-meta#community",
       persistenceHint: "pluggable",
       discussionsCategory: "meta",
@@ -184,27 +223,27 @@ const RAW_GAMES = [
       players: null,
       playersNote: "N/A — not a playable title",
       activityLabel: "Meta",
-      activityNote: "Platform / ForumPort / Shelf Community itself",
+      activityNote: "Settings & community for the Arcade itself",
       rating: null,
       ratingLabel: "Not a rated game",
       ratingCount: null,
       lastUpdate: "2026-09-08",
-      lastUpdateNote: "Meta Shelf tile (honest non-game listing)",
+      lastUpdateNote: "Platform listing (honest non-game)",
       openTargets: null,
       forumHeat7d: null,
     },
     about: {
       oneLiner:
-        "Honest Shelf listing for platform meta: GitHub Discussions meta category, ForumPort adapter config, and Community chrome — not a fake playable game.",
+        "Settings & community for the Arcade itself — Discussions meta category, adapter config, and Community chrome. Not a playable game.",
       pillars: [
-        "Discussions meta is the binding commons for Shelf / ForumPort itself.",
-        "Adapter swaps (GitHub Discussions → NodeBB / Discourse later) land via [meta], not silent chrome rewrites.",
+        "Discussions meta is the shared place for Shelf and community settings.",
+        "Adapter swaps (GitHub Discussions → other forums later) land via meta, not silent chrome rewrites.",
         "Honest badges: platform-meta / not-a-game — no Play CTA pretending this is a title.",
       ],
       nonGoals: [
         "Pretending Platform Meta is a playable Foss Arcade game",
-        "Hard-wiring GraphQL field names into Shelf components",
-        "Standing up NodeBB/Discourse for Snake Seed",
+        "Hard-wiring API field names into Shelf components",
+        "Standing up a separate forum product for Snake Seed",
       ],
       engineNote: "N/A — platform listing. See docs/shopfront/community-forum.md.",
       licenses: "Docs CC-BY-4.0 · shopfront code Apache-2.0 (repo root)",
@@ -217,9 +256,15 @@ const RAW_GAMES = [
 
 export const games = RAW_GAMES.map(enrichTile);
 
-/** Sort: popularScore DESC → lastUpdateTs DESC → titleKey ASC */
+/**
+ * Sort: sectionWeight ASC (games before platform) → popularScore DESC →
+ * lastUpdateTs DESC → titleKey ASC
+ */
 export function sortedGames(list = games) {
   return [...list].sort((a, b) => {
+    const wa = a.sort?.sectionWeight ?? (isPlatformMetaTile(a) ? 1 : 0);
+    const wb = b.sort?.sectionWeight ?? (isPlatformMetaTile(b) ? 1 : 0);
+    if (wa !== wb) return wa - wb;
     const sa = a.sort?.popularScore ?? 0;
     const sb = b.sort?.popularScore ?? 0;
     if (sb !== sa) return sb - sa;
@@ -230,6 +275,16 @@ export function sortedGames(list = games) {
       String(b.sort?.titleKey ?? "")
     );
   });
+}
+
+/** Playable game tiles only (excludes platform meta). */
+export function sortedPlayableGames(list = games) {
+  return sortedGames(list).filter((g) => !isPlatformMetaTile(g));
+}
+
+/** Platform / meta tiles only. */
+export function sortedPlatformTiles(list = games) {
+  return sortedGames(list).filter((g) => isPlatformMetaTile(g));
 }
 
 export function getGameById(id) {
