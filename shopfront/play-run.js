@@ -8,7 +8,7 @@
  * - Default Play = defaultPlayForTile(tile, artifacts)
  * - Cross-game paste → confirm navigate, then apply (never silent on wrong page)
  * - Unstable / conflicts → confirm before apply
- * - Mods: namespaced ids; Seed Snake has no real mod loader — UI state + playHref query only
+ * - Mods: namespaced ids; games/snake/mods registry; Snake applies known packs from ?run=
  */
 
 import {
@@ -17,6 +17,7 @@ import {
   defaultPlayForTile,
   isValidModId,
 } from "./run-hash.js";
+import { seedModsForGame as registrySeedMods } from "../games/snake/mods/registry.js";
 
 /**
  * @typedef {import("./run-hash.js").RunSpec} RunSpec
@@ -31,26 +32,18 @@ import {
  * @property {string[]} [conflicts]
  */
 
-/** Seed stub mod catalog for Snake (namespaced ids; no real loader yet). */
-export const SNAKE_SEED_MODS = Object.freeze([
-  {
-    id: "snake.mod.skin-neon",
-    label: "Skin — neon",
-    compatibleChannels: "*",
-  },
-  {
-    id: "snake.mod.speed-extreme",
-    label: "Speed — extreme",
-    compatibleChannels: ["unstable"],
-  },
-]);
+/**
+ * Snake mod catalog from games/snake/mods registry (real mod.yaml packs).
+ * Frozen for Play-tab consumers.
+ */
+export const SNAKE_SEED_MODS = Object.freeze(registrySeedMods("snake"));
 
 /**
  * @param {string} gameId
  * @returns {readonly SeedMod[]}
  */
 export function seedModsForGame(gameId) {
-  if (gameId === "snake") return SNAKE_SEED_MODS;
+  if (gameId === "snake") return Object.freeze(registrySeedMods("snake"));
   return Object.freeze([]);
 }
 

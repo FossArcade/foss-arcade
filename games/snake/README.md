@@ -35,3 +35,17 @@ From the monorepo root, run the start script (serves this folder on port 4321).
 Open targets live under [`targets/`](./targets/) (e.g. `snake-local-hiscore`). To implement one on your machine, follow [implement-snake-target.md](../../docs/walkthroughs/implement-snake-target.md).
 
 Variants that bend pillars belong under `variants/`, not silent mainline mods. See org [design authority](../../docs/governance/01-design-authority.md).
+
+## Run hash / mods (smoke)
+
+Serve from repo root (npm start) and open /games/snake/.
+
+| Check | Action |
+| --- | --- |
+| Default Play | chip unstable, no mods; hash fa1_snake_unstable |
+| Speed extreme | ?run=fa1_snake_unstable_snake.mod.speed-extreme |
+| Verbose | ?channel=unstable&mods=snake.mod.speed-extreme&game=snake |
+| Unknown mod | soft-fail warn; default pace |
+| Hiscores | partitioned by canonical fa1_; Clear is per-namespace |
+
+Packs: mods/<slug>/mod.yaml + mods/registry.js. See docs/design/run-hash-deepen.md.

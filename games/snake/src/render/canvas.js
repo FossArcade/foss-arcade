@@ -12,6 +12,20 @@ const COLORS = {
   fruitHi: "#ffb39a",
 };
 
+const NEON_COLORS = {
+  bg: "#050510",
+  grid: "#1a1040",
+  wall: "#5b2cff",
+  snake: "#39ff14",
+  head: "#e0ff66",
+  fruit: "#ff2bd6",
+  fruitHi: "#ff9cf0",
+};
+
+function paletteFor(state) {
+  return state && state.skin === "neon" ? NEON_COLORS : COLORS;
+}
+
 export function boardPixelSize(state, cell = 28) {
   return { width: state.width * cell, height: state.height * cell, cell };
 }
@@ -22,16 +36,17 @@ export function boardPixelSize(state, cell = 28) {
  * @param {number} [cell]
  */
 export function render(ctx, state, cell = 28) {
+  const palette = paletteFor(state);
   const w = state.width * cell;
   const h = state.height * cell;
   const canvas = ctx.canvas;
   if (canvas.width !== w) canvas.width = w;
   if (canvas.height !== h) canvas.height = h;
 
-  ctx.fillStyle = COLORS.bg;
+  ctx.fillStyle = palette.bg;
   ctx.fillRect(0, 0, w, h);
 
-  ctx.strokeStyle = COLORS.grid;
+  ctx.strokeStyle = palette.grid;
   ctx.lineWidth = 1;
   ctx.beginPath();
   for (let x = 0; x <= state.width; x++) {
@@ -44,7 +59,7 @@ export function render(ctx, state, cell = 28) {
   }
   ctx.stroke();
 
-  ctx.strokeStyle = COLORS.wall;
+  ctx.strokeStyle = palette.wall;
   ctx.lineWidth = 3;
   ctx.strokeRect(1.5, 1.5, w - 3, h - 3);
 
@@ -52,10 +67,10 @@ export function render(ctx, state, cell = 28) {
     const fx = state.fruit.x * cell;
     const fy = state.fruit.y * cell;
     const pad = Math.max(3, cell * 0.18);
-    ctx.fillStyle = COLORS.fruit;
+    ctx.fillStyle = palette.fruit;
     roundRect(ctx, fx + pad, fy + pad, cell - pad * 2, cell - pad * 2, 4);
     ctx.fill();
-    ctx.fillStyle = COLORS.fruitHi;
+    ctx.fillStyle = palette.fruitHi;
     ctx.beginPath();
     ctx.arc(fx + cell * 0.38, fy + cell * 0.38, cell * 0.12, 0, Math.PI * 2);
     ctx.fill();
@@ -65,7 +80,7 @@ export function render(ctx, state, cell = 28) {
   for (let i = snake.length - 1; i >= 0; i--) {
     const c = snake[i];
     const pad = i === 0 ? 2 : 3;
-    ctx.fillStyle = i === 0 ? COLORS.head : COLORS.snake;
+    ctx.fillStyle = i === 0 ? palette.head : palette.snake;
     roundRect(
       ctx,
       c.x * cell + pad,
@@ -89,4 +104,4 @@ function roundRect(ctx, x, y, w, h, r) {
   ctx.closePath();
 }
 
-export { COLORS };
+export { COLORS, NEON_COLORS };

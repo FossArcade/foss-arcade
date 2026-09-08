@@ -1,0 +1,10 @@
+id: snake.mod.speed-extreme
+title: Speed extreme
+slug: speed-extreme
+compatibleChannels: [unstable]
+conflicts: []
+replacesPillars: false
+designRev: games/snake/DESIGN.md
+sim:
+  tickMs: 70
+notes: Optional hardcore pace pack (Seed — unstable-only until compat widens).

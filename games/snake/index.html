@@ -10,6 +10,11 @@
     <header>
       <h1>Foss Snake</h1>
       <p class="tag">Eat fruit. Grow. Don’t crash. Seeded, deterministic, offline-first.</p>
+      <p class="run-chrome" aria-label="Active run">
+        <span class="run-chip" id="run-chip">unstable · no mods</span>
+        <code class="run-hash" id="run-hash" title="">—</code>
+      </p>
+      <p class="run-warn" id="run-warn" hidden></p>
     </header>
     <main class="shell">
       <section class="hud" aria-label="Run status">
@@ -40,9 +45,18 @@
         <button id="replay" type="button">Replay seed</button>
         <button id="new-run" type="button">New run</button>
       </div>
+      <section class="hiscores" aria-label="High scores for this run">
+        <div class="hiscores-head">
+          <h2>High scores</h2>
+          <button id="clear-hiscores" type="button" class="btn-quiet">Clear</button>
+        </div>
+        <p class="muted hiscores-note">Namespaced by run hash (channel + mods). Default Play stays separate from modded runs.</p>
+        <ol id="hiscore-list"></ol>
+      </section>
       <p class="help">
         <kbd>Arrows</kbd> / <kbd>WASD</kbd> steer (no 180° reverse) ·
         <kbd>Esc</kbd> pause · <kbd>R</kbd> new run · seed is copyable for races.
+        Deep link: <code>?run=fa1_…</code> or <code>?channel=&amp;mods=</code>.
       </p>
     </main>
     <script type="module" src="./src/main.js"></script>

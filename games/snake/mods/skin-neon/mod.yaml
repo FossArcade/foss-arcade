@@ -1,0 +1,10 @@
+id: snake.mod.skin-neon
+title: Neon skin
+slug: skin-neon
+compatibleChannels: [unstable, stable]
+conflicts: []
+replacesPillars: false
+designRev: games/snake/DESIGN.md
+sim: {}
+skin: neon
+notes: Visual-only pack; does not change simulation rules.
