@@ -1,0 +1,17 @@
+{
+  "id": "fixture-snake-wrap-walls",
+  "title": "Optional wrap walls as hardcore variant",
+  "game": "snake",
+  "flair": "feature",
+  "lane": "code",
+  "size": "S",
+  "status": "status:brief-ready",
+  "tags": ["status:brief-ready", "type:feature", "stage:brief"],
+  "url": "https://github.com/FossArcade/foss-arcade/discussions/0",
+  "body": "Players who want wrap walls as an opt-in hardcore path.",
+  "acceptanceCriteria": [
+    "Wrap walls ship only as an opt-in mod or variant",
+    "Default accessible main keeps wall collision",
+    "Tests stay green; determinism preserved for a fixed seed"
+  ]
+}

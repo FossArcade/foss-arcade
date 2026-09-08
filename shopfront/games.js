@@ -139,6 +139,80 @@ const RAW_GAMES = [
       gameYamlHref: "/games/snake/game.yaml",
     },
   },
+
+  {
+    id: "platform-meta",
+    title: "Platform Meta",
+    summary:
+      "Not a playable game — Shelf + ForumPort platform commons. Discusses Discussions categories, adapter swaps, and Community chrome for the Arcade itself.",
+    kind: "platform-meta",
+    lifecycle: "active",
+    stage: "Seed",
+    enginePrimary: "web",
+    stacks: ["web"],
+    playHref: "",
+    playable: false,
+    tags: ["all-ages", "meta", "platform", "forumport"],
+    channels: [],
+    defaultChannel: "",
+    href: "/shopfront/game?id=platform-meta",
+    parent: null,
+    githubHref:
+      "https://github.com/FossArcade/foss-arcade/tree/main/shopfront",
+    downloadLabel: "Not a downloadable title — platform meta only",
+    downloadEnabled: false,
+    offlineFirst: true,
+    placeholder: false,
+    badgeHints: ["platform-meta", "not-a-game"],
+    community: {
+      subreddit: "https://www.reddit.com/r/FOSSArcade",
+      subredditLabel: "r/FOSSArcade",
+      forumPath: "/shopfront/game?id=platform-meta#community",
+      persistenceHint: "pluggable",
+      discussionsCategory: "meta",
+      discussionsHref:
+        "https://github.com/FossArcade/foss-arcade/discussions/categories/meta",
+    },
+    forumPortMeta: {
+      port: "github-discussions",
+      owner: "FossArcade",
+      repo: "foss-arcade",
+      category: "meta",
+    },
+    metrics: {
+      mode: "stub",
+      players: null,
+      playersNote: "N/A — not a playable title",
+      activityLabel: "Meta",
+      activityNote: "Platform / ForumPort / Shelf Community itself",
+      rating: null,
+      ratingLabel: "Not a rated game",
+      ratingCount: null,
+      lastUpdate: "2026-09-08",
+      lastUpdateNote: "Meta Shelf tile (honest non-game listing)",
+      openTargets: null,
+      forumHeat7d: null,
+    },
+    about: {
+      oneLiner:
+        "Honest Shelf listing for platform meta: GitHub Discussions meta category, ForumPort adapter config, and Community chrome — not a fake playable game.",
+      pillars: [
+        "Discussions meta is the binding commons for Shelf / ForumPort itself.",
+        "Adapter swaps (GitHub Discussions → NodeBB / Discourse later) land via [meta], not silent chrome rewrites.",
+        "Honest badges: platform-meta / not-a-game — no Play CTA pretending this is a title.",
+      ],
+      nonGoals: [
+        "Pretending Platform Meta is a playable Foss Arcade game",
+        "Hard-wiring GraphQL field names into Shelf components",
+        "Standing up NodeBB/Discourse for Snake Seed",
+      ],
+      engineNote: "N/A — platform listing. See docs/shopfront/community-forum.md.",
+      licenses: "Docs CC-BY-4.0 · shopfront code Apache-2.0 (repo root)",
+      lineage: "Org-level platform tile (not under games/).",
+      designHref: "/docs/shopfront/community-forum.md",
+      gameYamlHref: "",
+    },
+  },
 ];
 
 export const games = RAW_GAMES.map(enrichTile);

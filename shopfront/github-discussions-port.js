@@ -16,6 +16,7 @@ import {
   SNAKE_CATEGORIES,
   SNAKE_FLAIRS,
 } from "./forum-port.js";
+import { exportBriefReady } from "./brief-export.js";
 
 /**
  * ForumPort category id → GitHub Discussions category slug.
@@ -158,13 +159,26 @@ export function createGitHubDiscussionsPort(overrides = {}) {
       throw new Error("upvote: write path not wired in Seed read-only GitHubDiscussionsPort");
     },
 
-    async exportBrief(threadId) {
+    async exportBrief(threadId, threadOverlay = null) {
+      const base = {
+        id: String(threadId || ""),
+        title: "Open on GitHub Discussions",
+        game: "snake",
+        url: `${discussionsBase(config)}/${encodeURIComponent(threadId)}`,
+        body: "",
+        status: null,
+        tags: [],
+      };
+      const thread = threadOverlay ? { ...base, ...threadOverlay, id: threadOverlay.id || base.id } : base;
+      const exported = exportBriefReady(thread);
       return {
-        md: "",
+        md: exported.md,
+        targetYaml: exported.targetYaml,
+        proposal: exported.proposal,
         meta: {
-          threadId,
-          note: "brief-ready → export automation is out of scope for slice 2",
-          discussionsUrl: `${discussionsBase(config)}/${encodeURIComponent(threadId)}`,
+          ...exported.meta,
+          discussionsUrl: thread.url || base.url,
+          note: exported.meta.note,
         },
       };
     },

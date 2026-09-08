@@ -82,3 +82,16 @@ Public shopfront + desktop builds will live at **fossarcade** (domain on the way
 - Catalog player/activity/rating stats are **stub** until a live metrics pipeline; do not invent counts. Default tip is **unstable** (stub != shipped stable).
 - Download buttons are placeholders until desktop packages ship.
 - Keep the shelf all-ages; see [content policy](../docs/governance/content-policy.md).
+
+### Slice 4 (brief-ready → export)
+
+- `brief-export.js` — pure helpers: detect `status:brief-ready`, build living-brief markdown + harness target YAML stub, intake-write-target hint (no silent main writes).
+- `brief-export-ui.js` — Promote section in Community tab (copy MD / YAML / intake command; Seed fixture demo).
+- `GitHubDiscussionsPort.exportBrief` — ForumPort-facing; uses brief-export helpers.
+- Fixture: `shopfront/fixtures/brief-ready-snake-wrap.json` (+ `seed-briefs.js` for browser).
+
+### Meta Shelf tile
+
+- Catalog id `platform-meta` — **not a playable game**; honest badges `platform meta` / `not a game`.
+- Points at Discussions `meta` category + ForumPort adapter sketch (`docs/shopfront/community-forum.md`).
+- Shelf CTA is “Open meta” / “Discussions meta”, never a fake Play deep link.

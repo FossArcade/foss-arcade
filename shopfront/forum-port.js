@@ -59,6 +59,8 @@
 /**
  * @typedef {Object} BriefExport
  * @property {string} md
+ * @property {string} [targetYaml]
+ * @property {Record<string, unknown>} [proposal]
  * @property {Record<string, unknown>} meta
  */
 
