@@ -15,7 +15,8 @@
   "license": "Apache-2.0",
   "scripts": {
     "start": "npx --yes serve games/snake -l 4321",
-    "test": "node --test games/snake/tests/*.test.js",
+    "test": "node --test games/snake/tests/*.test.js shopfront/*.test.js",
+    "test:shopfront": "node --test shopfront/*.test.js",
     "foss": "node tools/harness/foss.mjs",
     "shopfront": "npx --yes serve -l 4322 .",
     "reddit:intake": "node tools/reddit-intake/intake.mjs",

@@ -31,6 +31,16 @@ Game tiles use the `GameTile` view model in `games.js`. Home: `shelf.js`. Game p
 
 
 
+
+## Run hash helpers
+
+Pure helpers for shareable channel plus mod runs.
+
+- run-hash.js and run-hash.test.js in this folder
+- Tests via package script test:shopfront
+
+Design and locked answers live under docs/design/shelf-byo-github-and-run-hash.md. Namespaced mod ids; short aliases are UI-only.
+
 ## Domain
 
 Public shopfront + desktop builds will live at **fossarcade** (domain on the way). Until then, GitHub + `npm run shopfront` are the front door.

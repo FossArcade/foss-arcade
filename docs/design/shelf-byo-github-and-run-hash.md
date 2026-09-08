@@ -1,7 +1,7 @@
 # Shelf: bring-your-own GitHub + feature/mod run hash
 
 **Audience:** Foss Games Chief · **Lane:** Marquee  
-**Scope:** Design only — account/repo registration on the Arcade Shelf, and a shareable run hash for channel + mods.  
+**Scope:** Account/repo registration design on the Arcade Shelf, and a shareable run hash for channel + mods (pure helpers in `shopfront/run-hash.js`).  
 **Constraints:** existing governance; all-ages copy; handle-only examples (`MediumSweetPotato`); docs first — **no OAuth implementation**, no full UI in this PR.  
 **Date:** 2026-09-08 (Australia/Brisbane)
 
@@ -123,8 +123,9 @@ Catalog may stay static JSON for Seed; later a registration index (signed/open m
 **Honesty rules**
 
 - Official and community share UI chrome; they must **not** share a fake “verified players” metric at Seed (`10-cold-start`).  
-- Community does **not** inherit FossArcade content-policy automatic listing forever — listing can require a public checklist later; Seed may allow open registration with strong badge honesty first.  
+- Community does **not** inherit FossArcade content-policy automatic listing forever. **Locked:** Seed = maintainer PR to catalog only; Village+ self-register after public checklist (licenses + all-ages/content-policy + `game.yaml`) + sunshine log.  
 - Fork→PR: Community tab / Propose CTAs open against `repo.owner/repo`, not silently against FossArcade unless `origin: official`.
+- **`origin: official`** means FossArcade-stewarded (prefer FossArcade-owned `repo`). Community mirrors of official titles declare `mirrorOf`; do **not** badge random forks as official.
 
 ### 1.4 UX flows (wireframes — not implemented here)
 
@@ -168,7 +169,7 @@ Seed alternative: maintainers add community tiles by PR to the catalog (no OAuth
 | Play official Snake | No account | No account |
 | Catalog | Static `games.js`; official Snake | Registration index + official |
 | Connect GitHub | **Not required**; may be absent | OAuth link for register + write |
-| Register community repo | Docs + optional maintainer PR to catalog | Self-serve register flow |
+| Register community repo | Maintainer PR to catalog only | Self-register after public checklist + sunshine log |
 | ForumPort | Snake Discussions on org repo | Per-game `{owner,repo,…}` |
 | Badges | Docs + tile fields | First-class Shelf chrome |
 
@@ -212,7 +213,7 @@ type ChannelId = "unstable" | "stable" | `season-${number}` | string;
 { v: 1, game: "snake", channel: "stable", mods: [] }
 ```
 
-Note: Snake Seed catalog may still advertise `defaultChannel: "unstable"` while **stable is stub** — Play UI must show the existing stub≠shipped-stable banner from the deepen note. When a real stable artifact exists, Default Play follows this contract.
+**Locked (product lock / Foss Games Chief):** Default **Play button** = best shipped train — `stable` + `mods: []` when a real stable artifact exists; otherwise `unstable` + `mods: []` with the stub≠shipped-stable banner. Catalog may keep `defaultChannel: "unstable"` while stable is stub; flip catalog `defaultChannel` to `stable` **only** when the first real stable ships. Helper: `shopfront/run-hash.js` → `defaultPlayForTile(tile, artifacts)`.
 
 #### Human-shareable encoding (v1 sketch)
 
@@ -224,22 +225,25 @@ fa1_<game>_<channel>[_<modId~modId>][_t<tip>]
 
 # Examples
 fa1_snake_stable
-fa1_snake_unstable_speed-extreme~skin-neon
-fa1_snake_unstable_speed-extreme_t3a1b2c
+fa1_snake_unstable_snake.mod.skin-neon~snake.mod.speed-extreme
+fa1_snake_unstable_snake.mod.speed-extreme_t3a1b2c
 
 # URL form (Play tab deep link)
-/shopfront/game?id=snake&run=fa1_snake_unstable_speed-extreme
-# or /games/snake/?run=fa1_snake_unstable_speed-extreme
+/shopfront/game?id=snake&run=fa1_snake_unstable_snake.mod.speed-extreme
+# or /games/snake/?run=fa1_snake_unstable_snake.mod.speed-extreme
+# Verbose alias (accepted): ?id=snake&channel=unstable&mods=snake.mod.speed-extreme
 ```
 
 Rules:
 
 1. Prefix `fa1_` = Foss Arcade run hash version 1 (bump `fa2_` on breaking encode changes).  
 2. `mods` sorted lexicographically before encode — same set ⇒ same hash.  
-3. Unknown mod id on decode → soft-fail: show compatibility panel; do not auto-enable.  
-4. Mod incompatible with channel (declared in mod manifest) → block enable + explain; offer “open without that mod” or “switch channel”.  
-5. Variant ids in the mod list are **rejected** (compatibility error pointing at lineage UI).  
-6. Optional `tip` pins a build when sharing race repros; omit for “channel tip / latest”.
+3. Mod ids are **namespaced** from day one (`snake.mod.speed-extreme`); short aliases are UI-only and rejected in the hash.  
+4. Unknown mod id on decode → soft-fail: show compatibility panel; do not auto-enable.  
+5. Mod incompatible with channel (declared in mod manifest) → block enable + explain; offer “open without that mod” or “switch channel”.  
+6. Variant / pillar smuggling fields are **rejected**; variant ids in the mod list fail compatibility (point at lineage UI).  
+7. Optional `tip` pins a build when sharing race repros; omit for “channel tip / latest”.  
+8. Canonical share form is `fa1_…`; verbose `channel=&mods=` query is an accepted decode alias.
 
 Decode → `RunSpec`; encode is pure / deterministic.
 
@@ -291,7 +295,7 @@ Play / Download
 ## Implementation order (for Marquee later — not this PR)
 
 1. Extend `GameTile` types/docs with `origin`, `repo`, `forumPort`, `trustBadge` (Snake filled official).  
-2. Pure `encodeRunSpec` / `decodeRunSpec` + tests (no OAuth).  
+2. Pure `encodeRunSpec` / `decodeRunSpec` + tests (no OAuth) — `shopfront/run-hash.js`.  
 3. Play tab: Copy hash / Paste hash stubs against local mod list.  
 4. ForumPort already per-repo shaped — ensure Community uses `tile.forumPort` when multi-game.  
 5. Village: Connect GitHub + Register repo (separate security review).  
@@ -299,14 +303,16 @@ Play / Download
 
 ---
 
-## Open questions for Foss Games Chief
+## Locked answers (product lock / Foss Games Chief)
 
-1. **Default Play vs Snake Seed `defaultChannel: unstable`** — When stub stable exists, do we keep catalog `defaultChannel: unstable` for honesty, while Default Play *button* still targets “best shipped” with an explicit banner? Or flip catalog default on first real stable artifact only?  
-2. **Community listing gate** — Open self-register at Village, or maintainer-ack checklist (content policy + licenses) before the tile is browsable?  
-3. **Hash alphabet** — Prefer compact `fa1_…` opaque string, or always also show a verbose query (`channel=unstable&mods=a,b`) for debuggability? (Recommendation: both; hash canonical, query accepted as alias.)  
-4. **Cross-game paste** — If hash `game` ≠ current page, navigate to that game page or reject? (Recommendation: confirm navigate.)  
-5. **Official game in a non-org repo** — Allowed (mirror) or must `origin: official` imply FossArcade-owned `repo`?  
-6. **Mod ids stability** — Require reverse-domain ids (`snake.mod.speed-extreme`) vs short slugs? Short slugs need collision rules once BYO catalog grows.
+Marked **locked for Seed/Village** — implementers should treat these as settled unless a later product lock revises them.
+
+1. **Default Play vs Snake Seed `defaultChannel: unstable`** — **Locked:** Catalog may keep `defaultChannel: unstable` while stable is stub. The Default **Play button** targets the best shipped train: `stable` + no mods when a real stable artifact exists; otherwise `unstable` + no mods with the stub≠stable banner. Flip catalog `defaultChannel` to `stable` only when the first real stable ships.  
+2. **Community listing gate** — **Locked:** Village+ self-register after a public checklist (licenses + all-ages/content-policy + `game.yaml`) + sunshine log. Seed = maintainer PR to the catalog only (no OAuth).  
+3. **Hash alphabet** — **Locked:** `fa1_…` is canonical. Verbose query `channel=&mods=` (plus `game=` / `tip=` / `v=`) is an accepted decode alias for debuggability.  
+4. **Cross-game paste** — **Locked:** If hash `game` ≠ current page, confirm navigate to that game page, then apply the RunSpec.  
+5. **Official game in a non-org repo** — **Locked:** `origin: official` ⇒ FossArcade-stewarded; prefer a FossArcade-owned repo. Mirrors need `mirrorOf`; do not badge random forks official.  
+6. **Mod ids stability** — **Locked:** Namespaced ids from day one (`snake.mod.speed-extreme`). Short aliases are UI-only and must not appear in the hash.
 
 ---
 
@@ -322,4 +328,4 @@ Play / Download
 
 ---
 
-*Design note only. Patch freely; cite reasons. No OAuth or full UI in the landing PR for this doc.*
+*Design note + pure run-hash helpers. Patch freely; cite reasons. No OAuth or full Play-tab UI in the helpers PR.*
