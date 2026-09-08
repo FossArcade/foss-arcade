@@ -60,7 +60,7 @@ Discussions remain the conversation log; Markdown in-repo is the durable brief.
 
 ## Swap via `[meta]`
 
-Community / platform meta is itself a future **Shelf tile**. Meta config selects something like:
+Community / platform meta is a **Shelf tile** (`platform-meta` in `shopfront/games.js`) — honest non-game listing. Meta config selects something like:
 
 ```text
 { port: "github-discussions", repo, categories, labelMap }

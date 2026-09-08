@@ -75,7 +75,18 @@ function renderBadges(game) {
   if (game.placeholder) {
     bits.push(`<span class="badge badge-placeholder">placeholder</span>`);
   }
+  const hints = Array.isArray(game.badgeHints) ? game.badgeHints : [];
+  if (game.kind === "platform-meta" || hints.includes("platform-meta")) {
+    bits.push(`<span class="badge badge-platform-meta">platform meta</span>`);
+  }
+  if (game.playable === false || hints.includes("not-a-game")) {
+    bits.push(`<span class="badge badge-not-a-game">not a game</span>`);
+  }
   return bits.join(" ");
+}
+
+function isPlatformMeta(game) {
+  return game?.kind === "platform-meta" || game?.playable === false;
 }
 
 function heroPlayHref(game) {
@@ -291,6 +302,39 @@ async function copyText(text) {
 }
 
 /** TabPlayDownload — Default Play, channel/mods, copy/paste run hash stub */
+function renderMetaPlay(game) {
+  const panel = document.getElementById("panel-play");
+  const discuss =
+    game.community?.discussionsHref ||
+    "https://github.com/FossArcade/foss-arcade/discussions/categories/meta";
+  const cfg = game.forumPortMeta || {};
+  panel.innerHTML = `
+    <h2>Platform meta</h2>
+    <div class="gate gate-meta">
+      <p><strong>Not a playable game.</strong> This Shelf tile is the honest listing for
+        ForumPort / Shelf Community platform commons (Discussions <code>meta</code> category).</p>
+      <p class="muted">Seed adapter config sketch:
+        <code>{ port: "${escapeHtml(cfg.port || "github-discussions")}", repo: "${escapeHtml(
+          (cfg.owner || "FossArcade") + "/" + (cfg.repo || "foss-arcade")
+        )}", category: "${escapeHtml(cfg.category || "meta")}" }</code>
+      </p>
+      <div class="actions">
+        <a class="btn btn-primary" href="${escapeAttr(discuss)}" rel="noopener noreferrer">Open Discussions meta</a>
+        <a class="btn btn-secondary" href="${escapeAttr(
+          game.about?.designHref || "/docs/shopfront/community-forum.md"
+        )}">Community forum doc</a>
+        ${
+          game.githubHref
+            ? `<a class="btn btn-secondary" href="${escapeAttr(
+                game.githubHref
+              )}" rel="noopener noreferrer">Open shopfront files</a>`
+            : ""
+        }
+      </div>
+    </div>
+  `;
+}
+
 function renderPlay(game) {
   const panel = document.getElementById("panel-play");
   const def = defaultPlayState(game);
@@ -639,8 +683,28 @@ function renderAbout(game) {
 /** TabCommunity — ForumPort-backed UI (Snake); PlaceholderGameGate otherwise */
 async function renderCommunity(game) {
   const panel = document.getElementById("panel-community");
-  if (game.placeholder) {
+  if (game.placeholder && !isPlatformMeta(game)) {
     panel.innerHTML = renderPlaceholderGate();
+    return;
+  }
+  if (isPlatformMeta(game)) {
+    const discuss =
+      game.community?.discussionsHref ||
+      "https://github.com/FossArcade/foss-arcade/discussions/categories/meta";
+    panel.innerHTML = `
+      <h2>Community</h2>
+      <div class="gate gate-meta">
+        <p><strong>Platform meta commons.</strong> Use the GitHub Discussions
+          <code>meta</code> category for ForumPort / Shelf Community itself
+          (adapter swaps, category map, chrome). Not a game proposal lane.</p>
+        <div class="actions">
+          <a class="btn btn-primary" href="${escapeAttr(discuss)}" rel="noopener noreferrer">Discussions meta</a>
+          <a class="btn btn-secondary" href="${escapeAttr(
+            discuss.replace(/\/categories\/meta$/, "/new?category=meta")
+          )}" rel="noopener noreferrer">New meta discussion</a>
+        </div>
+        <p class="muted">See <code>docs/shopfront/community-forum.md</code> — swap via <code>[meta]</code>.</p>
+      </div>`;
     return;
   }
   panel.innerHTML = `<h2>Community</h2><p class="muted">Loading ForumPort…</p>`;
@@ -660,6 +724,15 @@ async function renderCommunity(game) {
 /** TabChangelog stub */
 function renderChangelog(game) {
   const panel = document.getElementById("panel-changelog");
+  if (isPlatformMeta(game)) {
+    panel.innerHTML = `
+      <h2>Changelog</h2>
+      <div class="gate gate-meta">
+        <p><strong>No game channel tips.</strong> Platform Meta is not on a playable release train.
+          Track ForumPort / Shelf changes via docs PRs and Discussions <code>meta</code>.</p>
+      </div>`;
+    return;
+  }
   panel.innerHTML = `
     <h2>Changelog</h2>
     <div class="gate gate-stub">

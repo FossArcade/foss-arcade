@@ -1,6 +1,7 @@
 /**
  * TabCommunity UI — FlairBadge / FlairFilter / PipelineStrip + ForumPort-backed lists.
  * Slice 3: ConsiderationCatalog + ConsiderationVoteRow; PipelineStrip tracks filter state.
+ * Slice 4: brief-ready Promote export (markdown + target YAML stub) via ForumPort / brief-export.
  * Snake only for Community e2e; callers must respect PlaceholderGameGate.
  */
 
@@ -15,6 +16,13 @@ import {
   asCommunityStore,
 } from "./forum-port.js";
 import { githubDiscussionsPort } from "./github-discussions-port.js";
+import {
+  renderPromoteSection,
+  bindPromoteSection,
+  runExport,
+  getSeedBriefFixture,
+} from "./brief-export-ui.js";
+import { isBriefReady } from "./brief-export.js";
 
 function escapeHtml(s) {
   return String(s)
@@ -359,6 +367,9 @@ export async function mountTabCommunity(panel, game, port = githubDiscussionsPor
   let profileFilter = "any";
   /** @type {Record<string, 1|-1|0>} */
   const localVotes = {};
+  /** @type {ReturnType<typeof runExport>|null} */
+  let lastExport = null;
+  let lastExportFromFixture = false;
 
   async function paint() {
     const query = { game: gameId, sort: /** @type {"new"} */ ("new") };
@@ -430,20 +441,15 @@ export async function mountTabCommunity(panel, game, port = githubDiscussionsPor
       ${renderThreadList("Living briefs", filterFlair(briefs), [
         openGh("briefs", "Open briefs on GitHub"),
       ])}
-      <section class="community-list" aria-labelledby="list-targets">
-        <h3 id="list-targets">Targets</h3>
-        <div class="empty-state">
-          <p class="muted">Harness targets stay in-repo (<code>games/${escapeHtml(
-            gameId
-          )}/targets/</code>). Promote from brief-ready is a later slice.</p>
-          <p class="empty-links">
-            <a class="btn btn-secondary btn-sm" href="${escapeAttr(
-              game.githubHref ||
-                `https://github.com/FossArcade/foss-arcade/tree/main/games/${gameId}`
-            )}" rel="noopener noreferrer">Open game files</a>
-          </p>
-        </div>
-      </section>
+      ${renderPromoteSection({
+        briefs: filterFlair(briefs),
+        gameId,
+        githubHref:
+          game.githubHref ||
+          `https://github.com/FossArcade/foss-arcade/tree/main/games/${gameId}`,
+        exported: lastExport,
+        exportFromFixture: lastExportFromFixture,
+      }).html}
       ${renderProposalComposer(port)}
       ${renderCategoryLinks(port)}
       <p class="muted community-foot">
@@ -516,6 +522,33 @@ export async function mountTabCommunity(panel, game, port = githubDiscussionsPor
         });
       });
     }
+
+    bindPromoteSection(panel, {
+      getExported: () => lastExport,
+      onExportFixture: () => {
+        lastExport = runExport(getSeedBriefFixture(), { created: "2026-09-08" });
+        lastExportFromFixture = true;
+        paint();
+      },
+      onExportThread: async (threadId) => {
+        const all = filterFlair(briefs);
+        const hit = all.find((t) => t.id === threadId);
+        if (hit && isBriefReady(hit)) {
+          lastExport = runExport(hit);
+          lastExportFromFixture = false;
+        } else {
+          const fromPort = await port.exportBrief(threadId, hit || null);
+          lastExport = {
+            md: fromPort.md,
+            targetYaml: fromPort.targetYaml || "",
+            proposal: fromPort.proposal || null,
+            meta: fromPort.meta || {},
+          };
+          lastExportFromFixture = false;
+        }
+        paint();
+      },
+    });
   }
 
   await paint();

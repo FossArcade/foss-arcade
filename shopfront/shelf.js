@@ -79,6 +79,17 @@ function renderBadges(game) {
       `<span class="badge badge-stub" title="Metrics are stubs — not live counts">stub metrics</span>`
     );
   }
+  const hints = Array.isArray(game.badgeHints) ? game.badgeHints : [];
+  if (game.kind === "platform-meta" || hints.includes("platform-meta")) {
+    bits.push(
+      `<span class="badge badge-platform-meta" title="Platform listing — ForumPort / Shelf meta">platform meta</span>`
+    );
+  }
+  if (game.playable === false || hints.includes("not-a-game")) {
+    bits.push(
+      `<span class="badge badge-not-a-game" title="Honest listing: not a playable game">not a game</span>`
+    );
+  }
   if (!bits.length) return "";
   return `<div class="badges" aria-label="Listing badges">${bits.join("")}</div>`;
 }
@@ -181,6 +192,21 @@ function renderCatalogTile(game) {
   const gamePageHref = game.href || `./game?id=${encodeURIComponent(game.id)}`;
   const sortTip = `popularScore ${game.sort?.popularScore ?? "—"} (lifecycle + listing honesty; stub metrics excluded)`;
 
+  const isMeta = game.kind === "platform-meta" || game.playable === false;
+  if (isMeta) card.classList.add("card-platform-meta");
+  const metaDiscuss =
+    game.community?.discussionsHref ||
+    "https://github.com/FossArcade/foss-arcade/discussions/categories/meta";
+  const primaryCta = isMeta
+    ? `<a class="btn btn-primary" href="${escapeAttr(gamePageHref)}">Open meta</a>`
+    : `<a class="btn btn-primary" href="${escapeAttr(game.playHref)}">Play</a>`;
+  const secondaryPage = isMeta
+    ? `<a class="btn btn-secondary" href="${escapeAttr(gamePageHref)}">Meta page</a>`
+    : `<a class="btn btn-secondary" href="${escapeAttr(gamePageHref)}">Game page</a>`;
+  const discussBtn = isMeta
+    ? `<a class="btn btn-secondary" href="${escapeAttr(metaDiscuss)}" rel="noopener noreferrer">Discussions meta</a>`
+    : "";
+
   card.innerHTML = `
     <div class="card-head">
       <h3><a class="card-title-link" href="${escapeAttr(gamePageHref)}">${escapeHtml(
@@ -192,12 +218,13 @@ function renderCatalogTile(game) {
     ${tags}
     ${renderMetrics(game)}
     <div class="actions">
-      <a class="btn btn-primary" href="${escapeAttr(game.playHref)}">Play</a>
-      <a class="btn btn-secondary" href="${escapeAttr(gamePageHref)}">Game page</a>
-      ${downloadBtn}
+      ${primaryCta}
+      ${secondaryPage}
+      ${discussBtn}
+      ${isMeta ? "" : downloadBtn}
       ${github}
     </div>
-    ${downloadNote}
+    ${isMeta ? `<p class="note">Honest listing — not a playable Foss Arcade game.</p>` : downloadNote}
     <p class="sort-hint" title="${escapeAttr(sortTip)}">Sorted by popular-first (stub-safe)</p>
   `;
 
@@ -211,5 +238,7 @@ for (const game of ordered) {
 
 const shelfMeta = document.getElementById("shelf-meta");
 if (shelfMeta) {
-  shelfMeta.textContent = `${ordered.length} title${ordered.length === 1 ? "" : "s"} · popular-first`;
+  const playableCount = ordered.filter((g) => g.playable !== false && g.kind !== "platform-meta").length;
+  const metaCount = ordered.length - playableCount;
+  shelfMeta.textContent = `${ordered.length} listing${ordered.length === 1 ? "" : "s"} (${playableCount} playable${metaCount ? `, ${metaCount} meta` : ""}) · popular-first`;
 }
