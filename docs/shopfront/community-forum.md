@@ -78,6 +78,12 @@ Later: `port: "nodebb"` or `port: "discourse"` behind the same ForumPort. Shelf 
 - Treating Reddit as on-site Community
 - Real legal names or personal emails in templates, examples, commits, or PR bodies
 
+## Seed checklist
+
+Ops steps (enable Discussions, categories, labels): [`discussion-seed.md`](./discussion-seed.md).
+
+Custom categories are live. Seed adapter uses identity slugs except ForumPort `q-and-a` → GitHub `q-a` (`SEED_CATEGORY_SLUG_MAP` in `shopfront/github-discussions-port.js`).
+
 ## Related
 
 - Shopfront v0: [`shopfront/`](../../shopfront/)

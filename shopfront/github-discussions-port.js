@@ -6,6 +6,7 @@
  * so a GraphQL-backed implementation can replace this later without UI rewrites.
  *
  * @see docs/shopfront/community-forum.md
+ * @see docs/shopfront/discussion-seed.md
  */
 
 import {
@@ -16,13 +17,31 @@ import {
   SNAKE_FLAIRS,
 } from "./forum-port.js";
 
+/**
+ * ForumPort category id → GitHub Discussions category slug.
+ * Custom categories are LIVE (announcements, proposals, considerations, briefs,
+ * meta, show-and-tell). Only non-identity mapping: ForumPort `q-and-a` → GitHub `q-a`.
+ * Leftover DEFAULT categories (General / Ideas / Polls) may still exist on the repo;
+ * Shelf links do not target them.
+ */
+export const SEED_CATEGORY_SLUG_MAP = Object.freeze({
+  announcements: "announcements",
+  proposals: "proposals",
+  considerations: "considerations",
+  briefs: "briefs",
+  "show-and-tell": "show-and-tell",
+  "q-and-a": "q-a", // GitHub default Q&A slug (not q-and-a)
+  meta: "meta",
+});
+
+/** @deprecated Alias — same as SEED_CATEGORY_SLUG_MAP (identity + q-and-a→q-a). */
+export const INTENDED_CATEGORY_SLUGS = SEED_CATEGORY_SLUG_MAP;
+
 const DEFAULT_CONFIG = {
   owner: "FossArcade",
   repo: "foss-arcade",
   /** Map ForumPort category ids → GitHub Discussions category slug fragments. */
-  categories: Object.fromEntries(
-    SNAKE_CATEGORIES.map((c) => [c.id, c.id])
-  ),
+  categories: { ...SEED_CATEGORY_SLUG_MAP },
   /** Optional label map for when GraphQL lands (UI must not read these directly). */
   labelMap: {
     flair: Object.fromEntries(SNAKE_FLAIRS.map((f) => [f.id, `type:${f.id === "bug" ? "bug" : f.id}`])),
