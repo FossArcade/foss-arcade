@@ -1,4 +1,8 @@
 import { getGameById } from "./games.js";
+import {
+  mountTabCommunity,
+  renderPlaceholderGate,
+} from "./community-ui.js";
 
 function escapeHtml(s) {
   return String(s)
@@ -202,39 +206,25 @@ function renderAbout(game) {
   `;
 }
 
-/** TabCommunity stub + PlaceholderGameGate — ForumPort later; no forum UI this slice */
-function renderCommunity(game) {
+/** TabCommunity — ForumPort-backed UI (Snake); PlaceholderGameGate otherwise */
+async function renderCommunity(game) {
   const panel = document.getElementById("panel-community");
   if (game.placeholder) {
-    panel.innerHTML = `
-      <h2>Community</h2>
-      <div class="gate gate-placeholder">
-        <p><strong>PlaceholderGameGate</strong> — Community e2e opens when this title is active on the Shelf (not a placeholder listing).</p>
-        <p class="muted">Persistence will be ForumPort-facing (GitHub Discussions for Snake Seed). Reddit remains outreach only.</p>
-      </div>
-    `;
+    panel.innerHTML = renderPlaceholderGate();
     return;
   }
-
-  panel.innerHTML = `
-    <h2>Community</h2>
-    <div class="gate gate-stub">
-      <p><strong>Coming in a later slice.</strong> This tab is a UI + schema contract only in slice 1.</p>
-      <p>Binding commons will live on <strong>Shelf Community</strong> backed by a pluggable <code>ForumPort</code> (Snake Seed: GitHub Discussions). Proposals, considerations, briefs, and promote land later — do not treat this stub as shipped forum law.</p>
-      <p class="muted">
-        Outreach:
-        ${
-          game.community?.subreddit
-            ? `<a href="${escapeAttr(
-                game.community.subreddit
-              )}" rel="noopener noreferrer">${escapeHtml(
-                game.community.subredditLabel || "Reddit"
-              )}</a> (non-binding)`
-            : "Reddit link TBD"
-        }
-      </p>
-    </div>
-  `;
+  panel.innerHTML = `<h2>Community</h2><p class="muted">Loading ForumPort…</p>`;
+  try {
+    await mountTabCommunity(panel, game);
+  } catch (err) {
+    console.error(err);
+    panel.innerHTML = `
+      <h2>Community</h2>
+      <div class="gate gate-stub">
+        <p><strong>Could not load Community tab.</strong> ${String(err?.message || err)}</p>
+        <p class="muted">Binding commons: Shelf Community + GitHub Discussions via ForumPort.</p>
+      </div>`;
+  }
 }
 
 /** TabChangelog stub */
@@ -308,7 +298,7 @@ function renderMissing(id) {
   if (banner) banner.hidden = true;
 }
 
-function main() {
+async function main() {
   const id = qsId();
   const game = getGameById(id);
   if (!game) {
@@ -320,7 +310,7 @@ function main() {
   setStubBanner(game);
   renderPlay(game);
   renderAbout(game);
-  renderCommunity(game);
+  await renderCommunity(game);
   renderChangelog(game);
 
   for (const tab of document.querySelectorAll(".tab")) {

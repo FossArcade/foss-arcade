@@ -27,7 +27,7 @@ npm start
 
 ## Catalog
 
-Game tiles use the `GameTile` view model in `games.js`. Home: `shelf.js`. Game page: `game.html` + `game.js` (Play/About wired for Snake; Community/Changelog stub). Popular-first sort; stub metrics only.
+Game tiles use the `GameTile` view model in `games.js`. Home: `shelf.js`. Game page: `game.html` + `game.js` (Play/About/Community for Snake; Changelog stub). Popular-first sort; stub metrics only.
 
 
 
@@ -39,6 +39,13 @@ Public shopfront + desktop builds will live at **fossarcade** (domain on the way
 
 - **Binding commons:** Shelf Community + GitHub Discussions / briefs / targets (ForumPort) — see `docs/shopfront/community-forum.md` and `docs/ALIGN.md`.
 - **Reddit:** [r/FOSSArcade](https://www.reddit.com/r/FOSSArcade) — outreach only (`community.subreddit` on tiles).
+
+### Slice 2 (Community tab)
+
+- `forum-port.js` — `ForumPort` contract (+ `CommunityStore` thin alias).
+- `github-discussions-port.js` — read-only Seed adapter: category / search / compose URLs for `FossArcade/foss-arcade` Discussions (no GraphQL in UI).
+- `community-ui.js` — TabCommunity: FlairFilter / FlairBadge, PipelineStrip, proposal/consideration/brief lists (empty + Open on GitHub), compose stubs, PlaceholderGameGate for non-Snake.
+- Snake only for Community e2e; Changelog remains a stub.
 
 ## Notes
 
