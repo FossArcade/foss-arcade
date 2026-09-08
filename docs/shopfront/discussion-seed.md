@@ -9,23 +9,25 @@ See also: [`community-forum.md`](./community-forum.md) · category map in `shopf
 1. Repo **Settings → General → Features → Discussions**.
 2. Confirm the Discussions tab appears on the repo.
 
-## 2. Create categories
+**Status:** Discussions enabled.
 
-GitHub defaults today (live): `announcements`, `general`, `ideas`, `polls`, `q-a`, `show-and-tell`.
+## 2. Categories
 
-**Needed** (ForumPort / community-forum.md). GraphQL cannot create categories — create these in the UI:
+**Status:** Needed ForumPort categories are **created** (live in GraphQL).
 
-| Intended category | Role | Interim live slug (Seed map) |
-| --- | --- | --- |
-| Announcements | Maintainer releases and seed rules | `announcements` |
-| Proposals | Intake: feature / fix / balance ideas | `ideas` |
-| Considerations | Design debate, tradeoffs, playtest notes | `general` |
-| Briefs | Living brief drafts toward export | `general` |
-| Show and tell | Clips, forks, skins | `show-and-tell` |
-| Q&A | Player help (not proposals) | `q-a` |
-| Meta | Platform / ForumPort / Shelf Community | `general` |
+| Category | Role | Live slug | Status |
+| --- | --- | --- | --- |
+| Announcements | Maintainer releases and seed rules | `announcements` | Created |
+| Proposals | Intake: feature / fix / balance ideas | `proposals` | Created |
+| Considerations | Design debate, tradeoffs, playtest notes | `considerations` | Created |
+| Briefs | Living brief drafts toward export | `briefs` | Created |
+| Show and tell | Clips, forks, skins | `show-and-tell` | Created |
+| Q&A | Player help (not proposals) | `q-a` | Created (GitHub default slug) |
+| Meta | Platform / ForumPort / Shelf Community | `meta` | Created |
 
-After Proposals / Considerations / Briefs / Meta exist with those names/slugs, set `useInterimSlugs: false` on the Seed port (or point `SEED_CATEGORY_SLUG_MAP` at `INTENDED_CATEGORY_SLUGS`) so category links stop using interim fallbacks.
+Leftover DEFAULT categories may still appear (`general`, `ideas`, `polls`) — Shelf does not link to them.
+
+Seed adapter map (`SEED_CATEGORY_SLUG_MAP`): identity for all ForumPort ids except `q-and-a` → `q-a`.
 
 ## 3. Create labels
 
@@ -34,6 +36,8 @@ Pipeline labels already exist on the repo (`type:*`, `stage:*`, `status:*`). Con
 - **Type:** `type:feature` · `type:bug` · `type:balance` · `type:docs` · `type:meta`
 - **Stage:** `stage:proposal` · `stage:consideration` · `stage:brief` · `stage:harness` · `stage:pr`
 - **Status:** `status:needs-votes` · `status:brief-ready` · `status:accepted` · `status:declined` · `status:shipped`
+
+**Status:** Labels already present.
 
 ## 4. Optional first announcement
 

@@ -295,7 +295,7 @@ export function renderProposalComposer(port) {
   return `
     <section class="compose-stub" aria-labelledby="compose-heading">
       <h3 id="compose-heading">Compose</h3>
-      <p>Open a new Discussion (GitHub). Shelf stays on ForumPort — write API lands later. Interim category slugs may land in <code>ideas</code> / <code>general</code> until custom categories exist.</p>
+      <p>Open a new Discussion (GitHub). Shelf stays on ForumPort — write API lands later. Category slugs match live Discussions (ForumPort <code>q-and-a</code> → GitHub <code>q-a</code>).</p>
       <div class="actions">
         <a class="btn btn-primary" href="${escapeAttr(
           composeProposals
@@ -415,7 +415,7 @@ export async function mountTabCommunity(panel, game, port = githubDiscussionsPor
       ${renderThreadList("Open proposals", filterFlair(proposals), [
         openGh("proposals", "Open proposals on GitHub"),
         {
-          href: port.links.search(["is:open", "category:Ideas"]),
+          href: port.links.search(["is:open", "category:Proposals"]),
           label: "Search proposals",
         },
       ])}

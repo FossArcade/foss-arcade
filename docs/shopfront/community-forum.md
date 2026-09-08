@@ -80,9 +80,9 @@ Later: `port: "nodebb"` or `port: "discourse"` behind the same ForumPort. Shelf 
 
 ## Seed checklist
 
-Ops steps (enable Discussions, create categories, confirm labels): [`discussion-seed.md`](./discussion-seed.md).
+Ops steps (enable Discussions, categories, labels): [`discussion-seed.md`](./discussion-seed.md).
 
-Until custom categories exist, the Seed adapter maps ForumPort ids to live DEFAULT slugs (`ideas` / `general` / `q-a`) via `SEED_CATEGORY_SLUG_MAP` — see that checklist and `shopfront/github-discussions-port.js`.
+Custom categories are live. Seed adapter uses identity slugs except ForumPort `q-and-a` → GitHub `q-a` (`SEED_CATEGORY_SLUG_MAP` in `shopfront/github-discussions-port.js`).
 
 ## Related
 

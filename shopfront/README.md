@@ -52,7 +52,7 @@ Public shopfront + desktop builds will live at **fossarcade** (domain on the way
 - `SNAKE_CONSIDERATION_CATALOG` in `forum-port.js` — accessible always-on + optional hardcore rows (design §D).
 - `ConsiderationCatalog` + `ConsiderationVoteRow` in Community tab — Seed votes are local ack / sunshine stubs (link to Discussions; no backend).
 - `PipelineStrip` highlights from flair / status filters or a selected stage (not pure decoration).
-- Category seed hygiene: `SEED_CATEGORY_SLUG_MAP` interim fallbacks (`proposals→ideas`, `q-and-a→q-a`, …); checklist in `docs/shopfront/discussion-seed.md`.
+- Category seed hygiene: `SEED_CATEGORY_SLUG_MAP` identity slugs (only `q-and-a→q-a`); checklist in `docs/shopfront/discussion-seed.md` (categories created).
 
 ## Notes
 
